@@ -24,13 +24,14 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1;
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8));
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7));
         }
 
         body { font-family: 'Poppins', sans-serif; color: white; height: 100vh; overflow: hidden; margin: 0; }
         .font-master { font-family: 'Orbitron', sans-serif; }
         .font-code { font-family: 'JetBrains Mono', monospace; }
 
+        /* SIDEBAR */
         .sidebar-luxury {
             font-family: 'Orbitron', sans-serif;
             letter-spacing: 2px;
@@ -40,7 +41,6 @@
             transition: 0.3s;
             border-left: 3px solid transparent;
         }
-
         .sidebar-luxury.active {
             color: #fff;
             background: linear-gradient(90deg, rgba(250, 204, 21, 0.2) 0%, transparent 100%);
@@ -48,31 +48,61 @@
             text-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
         }
 
-        /* HARD-LOCK CARD SYSTEM - BIAR TAMPILAN PROFESIONAL & SERAGAM */
+        /* DASHBOARD LAYOUT */
+        #mainContent {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start !important;
+            width: 100%;
+        }
+
+        #cardGrid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            width: 100% !important;
+            justify-content: start !important;
+        }
+
+        /* CARDS */
         .master-card {
-            background: rgba(20, 20, 20, 0.7);
-            backdrop-filter: blur(25px);
+            background: rgba(10, 10, 10, 0.5);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 28px;
             width: 100%;
-            height: 350px; /* TINGGI DIKUNCI MATI */
+            height: 380px;
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            padding: 22px;
             box-sizing: border-box;
         }
 
-        /* ISI KOTAK CATATAN AGAR SEPERTI INPUT LOGIN */
+        /* DISPLAY BOXES - Jarak Tombol Copy diperbaiki di sini */
+        .display-input-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 12px 22px; /* Padding samping ditambah agar tidak mepet */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 15px; /* Jarak antara teks dan ikon */
+        }
+
         .note-display-box {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 18px;
-            padding: 15px;
+            padding: 18px;
             flex-grow: 1;
             overflow: hidden;
             font-size: 10px;
-            line-height: 1.6;
-            color: #94a3b8;
+            line-height: 1.7;
+            color: #e2e8f0;
             font-family: 'JetBrains Mono', monospace;
             font-style: italic;
         }
@@ -85,22 +115,6 @@
 
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--neon-yellow); border-radius: 10px; }
-
-        /* MENCEGAH PERGERSERAN LAYOUT */
-        main {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start; /* TETAP DI KIRI */
-            width: 100%;
-        }
-
-        #cardGrid {
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 24px;
-            justify-content: start;
-        }
     </style>
 </head>
 <body class="flex">
@@ -114,11 +128,11 @@
             <div id="loginSideImg" class="hidden md:block w-1/2 m-4 rounded-[30px] bg-cover bg-center"></div>
             <div class="flex-1 p-12 text-center">
                 <h1 class="font-master text-xl font-black mb-1 tracking-[4px]">MASTER <span class="text-yellow-400">LOGIN</span></h1>
-                <p class="text-[8px] tracking-[0.5em] text-gray-500 mb-10 uppercase font-bold">Authorized Access Only</p>
+                <p class="text-[8px] tracking-[0.5em] text-gray-500 mb-10 uppercase font-bold">Authorized Access</p>
                 <div class="space-y-4 text-left">
                     <input type="text" id="loginUser" placeholder="USERNAME" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-yellow-400 text-white font-bold text-xs uppercase">
                     <input type="password" id="loginPass" placeholder="PASSWORD" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-yellow-400 text-white font-bold text-xs uppercase">
-                    <button onclick="handleLogin()" class="w-full py-4 rounded-xl bg-yellow-400 text-black font-black uppercase text-[10px] tracking-widest mt-6">Unlock Vault</button>
+                    <button onclick="handleLogin()" class="w-full py-4 rounded-xl bg-yellow-400 text-black font-black uppercase text-[10px] tracking-widest mt-6">Unlock</button>
                 </div>
             </div>
         </div>
@@ -132,71 +146,64 @@
                 <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> System Online
             </div>
         </div>
-
         <div class="flex-grow overflow-y-auto custom-scrollbar p-4" id="sidebarMenu"></div>
-
         <div class="p-6 space-y-3 border-t border-white/5">
-            <button onclick="openMenuModal()" class="w-full py-3 rounded-xl border border-yellow-400/30 text-yellow-400 text-[9px] font-bold tracking-[3px] hover:bg-yellow-400 hover:text-black transition uppercase"><i class="fas fa-folder-plus mr-2"></i> New Folder</button>
+            <button onclick="openMenuModal()" class="w-full py-3 rounded-xl border border-yellow-400/30 text-yellow-400 text-[9px] font-bold tracking-[3px] hover:bg-yellow-400 transition uppercase"><i class="fas fa-folder-plus mr-2"></i> New Folder</button>
             <button onclick="switchMenu('SETTINGS')" class="w-full py-3 bg-blue-600/10 text-blue-400 rounded-xl text-[9px] font-bold tracking-[3px] uppercase"><i class="fas fa-cog mr-2"></i> Settings</button>
-            <button onclick="logout()" class="w-full py-2 text-[8px] text-gray-600 font-bold uppercase tracking-widest hover:text-red-500 transition text-center">Logout Terminal</button>
+            <button onclick="logout()" class="w-full py-2 text-[8px] text-gray-600 font-bold uppercase tracking-widest hover:text-red-500 transition text-center">Logout</button>
         </div>
     </aside>
 
     <!-- DASHBOARD -->
-    <main class="flex-grow h-screen overflow-y-auto custom-scrollbar p-10">
+    <main id="mainContent" class="flex-grow h-screen overflow-y-auto custom-scrollbar p-10">
         <div class="flex justify-between items-start mb-10 w-full">
             <div>
                 <h1 id="currentMenuTitle" class="font-master text-4xl font-black text-white uppercase tracking-tighter italic">VAULT</h1>
-                <div class="h-1 w-20 bg-yellow-400 mt-2 shadow-[0_0_15px_#facc15]"></div>
+                <div class="h-1 w-20 bg-yellow-400 mt-2"></div>
             </div>
             <div class="text-right bg-black/20 backdrop-blur-xl px-6 py-3 rounded-2xl border border-white/10">
                 <div id="clockTime" class="neon-clock text-2xl font-black tracking-widest">00:00:00</div>
                 <div id="clockDate" class="text-[9px] text-gray-400 font-bold uppercase tracking-[3px] mt-1">-- --- ----</div>
             </div>
         </div>
-
         <div id="searchArea" class="flex flex-col lg:flex-row justify-between items-center mb-10 gap-4 w-full">
             <div class="relative w-full lg:w-[400px]">
-                <input type="text" id="searchInput" oninput="renderCards()" placeholder="Search Data Master..." class="w-full bg-black/20 border border-white/10 pl-12 pr-4 py-3.5 rounded-xl outline-none focus:border-yellow-400 text-xs font-bold text-white transition">
+                <input type="text" id="searchInput" oninput="renderCards()" placeholder="Search..." class="w-full bg-black/20 border border-white/10 pl-12 pr-4 py-3.5 rounded-xl outline-none focus:border-yellow-400 text-xs font-bold text-white">
                 <i class="fas fa-search absolute left-5 top-4 text-yellow-400"></i>
             </div>
-            <button onclick="openDataModal()" class="bg-yellow-400 text-black px-10 py-3.5 rounded-xl font-black text-[9px] uppercase tracking-widest">
-                <i class="fas fa-plus-circle mr-2"></i> Add Entry
-            </button>
+            <button onclick="openDataModal()" class="bg-yellow-400 text-black px-10 py-3.5 rounded-xl font-black text-[9px] uppercase tracking-widest">Add Entry</button>
         </div>
-
         <div id="cardGrid"></div>
-        <div id="emptyState" class="hidden text-center py-40 opacity-10 font-master text-4xl uppercase">Empty Database</div>
+        <div id="emptyState" class="hidden text-center py-40 opacity-10 font-master text-4xl uppercase">Empty</div>
     </main>
 
-    <!-- FOLDER MODAL -->
+    <!-- MODALS -->
     <div id="menuModal" class="fixed inset-0 bg-black/95 hidden z-[1001] flex items-center justify-center p-6 backdrop-blur-sm">
         <div class="p-10 rounded-[40px] w-full max-w-sm text-center border border-white/10 bg-black/90">
-            <h3 class="font-master text-lg font-black text-white mb-6 tracking-widest uppercase italic">Create Folder</h3>
+            <h3 class="font-master text-lg font-black text-white mb-6 uppercase italic">Folder</h3>
             <div class="space-y-4 text-left">
                 <input type="text" id="newMenuName" placeholder="FOLDER NAME" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-yellow-400 font-bold text-white text-sm uppercase">
-                <select id="newMenuType" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-yellow-400 font-bold text-yellow-400 text-sm">
-                    <option value="account">MODE AKUN (Login & Link)</option>
-                    <option value="note">MODE CATATAN (Memo)</option>
-                    <option value="image">MODE FOTO (Screenshot)</option>
+                <select id="newMenuType" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none text-yellow-400 font-bold text-sm">
+                    <option value="account">MODE AKUN</option>
+                    <option value="note">MODE CATATAN</option>
+                    <option value="image">MODE FOTO</option>
                     <option value="image_note">MODE FOTO & CATATAN</option>
                 </select>
             </div>
-            <button onclick="addNewMenu()" class="w-full py-4 mt-8 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px]">Confirm</button>
+            <button onclick="addNewMenu()" class="w-full py-4 mt-8 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px]">Create</button>
             <button onclick="closeMenuModal()" class="mt-4 text-gray-500 text-[9px] font-bold uppercase">Cancel</button>
         </div>
     </div>
 
-    <!-- ENTRY MODAL -->
     <div id="dataModal" class="fixed inset-0 bg-black/95 hidden z-[1000] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-black border border-yellow-400/30 rounded-[40px] w-full max-w-lg overflow-hidden shadow-2xl">
+        <div class="bg-black border border-yellow-400/30 rounded-[40px] w-full max-w-lg overflow-hidden">
             <div class="bg-yellow-400 p-5 flex justify-between items-center text-black">
-                <h3 class="font-black text-[10px] tracking-widest uppercase font-master italic">Master Config</h3>
+                <h3 class="font-black text-[10px] uppercase font-master italic">Master Config</h3>
                 <button onclick="closeDataModal()"><i class="fas fa-times"></i></button>
             </div>
             <form id="vaultForm" class="p-8 space-y-5">
                 <input type="hidden" id="editIndex">
-                <input type="text" id="inputTitle" required placeholder="ENTRY TITLE" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-yellow-400 text-white font-bold text-sm uppercase italic">
+                <input type="text" id="inputTitle" required placeholder="ENTRY TITLE" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-yellow-400 text-white font-bold text-sm uppercase">
                 <div id="accountFields" class="hidden space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <input type="text" id="inputUser" placeholder="USERNAME" class="bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold text-xs uppercase">
@@ -204,13 +211,9 @@
                     </div>
                     <input type="url" id="inputLink" placeholder="LOGIN LINK URL" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-yellow-400 font-bold text-xs">
                 </div>
-                <div id="imageFields" class="hidden">
-                    <input type="file" id="inputImageFile" accept="image/*" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-gray-400">
-                </div>
-                <div id="noteFields" class="hidden">
-                    <textarea id="inputContent" rows="6" placeholder="PASTE DATA HERE..." class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white text-xs font-code"></textarea>
-                </div>
-                <button type="submit" class="w-full py-4 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px]">Save to Vault</button>
+                <div id="imageFields" class="hidden"><input type="file" id="inputImageFile" accept="image/*" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-gray-400 font-bold"></div>
+                <div id="noteFields" class="hidden"><textarea id="inputContent" rows="6" placeholder="CONTENT..." class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white text-xs font-code"></textarea></div>
+                <button type="submit" class="w-full py-4 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px]">Save</button>
             </form>
         </div>
     </div>
@@ -218,9 +221,9 @@
     <script>
         let MASTER_USER = localStorage.getItem('v10_user') || "admin";
         let MASTER_PASS = localStorage.getItem('v10_pass') || "master123";
-        const defaultImg = "https://cdn.areabermain.club/assets/cdn/azdev/2026/08/01/20260801/88c44b3419d36c37925d97b2ae3c427c/screenshot-1.jpg";
-        let BG_LOGIN = localStorage.getItem('v10_bg_login') || defaultImg;
-        let BG_DASH = localStorage.getItem('v10_bg_dash') || defaultImg;
+        const dImg = "https://cdn.areabermain.club/assets/cdn/azdev/2026/08/01/20260801/88c44b3419d36c37925d97b2ae3c427c/screenshot-1.jpg";
+        let BG_LOGIN = localStorage.getItem('v10_bg_login') || dImg;
+        let BG_DASH = localStorage.getItem('v10_bg_dash') || dImg;
 
         let menus = JSON.parse(localStorage.getItem('v10_menus')) || [{ name: "DATA LOGIN", type: "account" }];
         let activeMenu = localStorage.getItem('v10_active') || "DATA LOGIN";
@@ -268,11 +271,10 @@
 
             if(activeMenu === 'SETTINGS') {
                 document.getElementById('searchArea').classList.add('hidden');
-                grid.className = "w-full max-w-3xl mx-auto space-y-6 mt-10"; // Settings Center
+                grid.className = "w-full max-w-3xl mx-auto space-y-6 mt-10";
                 renderSettings();
             } else {
                 document.getElementById('searchArea').classList.remove('hidden');
-                // GRID DIPAKSA RATA KIRI DAN TIDAK BERGESER
                 grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start justify-start w-full";
                 renderSidebar();
                 renderCards();
@@ -291,49 +293,22 @@
                 const rIndex = masterData.indexOf(item);
                 const card = document.createElement('div');
                 card.className = "master-card";
-                
                 let body = '';
                 if(mInfo.type === 'account') {
-                    body = `
-                    <div class="flex flex-col justify-between h-full pt-4">
-                        <div class="space-y-3">
-                            <div class="bg-black/50 p-4 rounded-xl flex justify-between items-center border border-white/5">
-                                <span class="text-[10px] font-bold text-yellow-400 truncate uppercase italic">${item.user}</span>
-                                <button onclick="copyText('${item.user}', this)" class="text-white/20 hover:text-yellow-400 transition"><i class="fas fa-clone"></i></button>
-                            </div>
-                            <div class="bg-black/50 p-4 rounded-xl flex justify-between items-center border border-white/5">
-                                <span class="text-[10px] font-bold text-yellow-400">********</span>
-                                <button onclick="copyText('${item.pass}', this)" class="text-white/20 hover:text-yellow-400 transition"><i class="fas fa-clone"></i></button>
-                            </div>
-                        </div>
-                        <a href="${item.link}" target="_blank" class="block w-full py-3 bg-yellow-400 text-black rounded-xl text-[9px] font-black text-center uppercase tracking-widest mt-4">Visit Login Link</a>
-                    </div>`;
+                    body = `<div class="flex flex-col justify-between h-full pt-4"><div class="space-y-3">
+                        <div class="display-input-box"><span class="text-[10px] font-bold text-yellow-400 truncate uppercase italic w-4/5">${item.user}</span><button onclick="copyText('${item.user}', this)" class="text-white/20 hover:text-yellow-400 transition"><i class="fas fa-clone"></i></button></div>
+                        <div class="display-input-box"><span class="text-[10px] font-bold text-yellow-400 w-4/5">********</span><button onclick="copyText('${item.pass}', this)" class="text-white/20 hover:text-yellow-400 transition"><i class="fas fa-clone"></i></button></div>
+                        <div class="display-input-box border-yellow-400/30 bg-yellow-400/10"><span class="text-[9px] font-bold text-yellow-400/60 truncate italic w-4/5">${item.link || 'NO LINK'}</span><button onclick="copyText('${item.link}', this)" class="text-yellow-400/40 hover:text-yellow-400"><i class="fas fa-copy"></i></button></div></div>
+                        <a href="${item.link}" target="_blank" class="block w-full py-3 bg-yellow-400 text-black rounded-xl text-[9px] font-black text-center uppercase tracking-widest mt-4">Visit Link</a></div>`;
                 } else if(mInfo.type === 'note' || mInfo.type === 'image_note') {
-                    // UKURAN SAMA PERSIS DENGAN AKUN
-                    body = `
-                    <div class="flex flex-col justify-between h-full pt-4">
+                    body = `<div class="flex flex-col justify-between h-full pt-4">
                         ${mInfo.type === 'image_note' ? `<div class="mb-3 rounded-xl overflow-hidden h-20 border border-white/10"><img src="${item.image}" class="w-full h-full object-cover"></div>` : ''}
-                        <div class="note-display-box">
-                            ${item.content}
-                        </div>
-                        <button onclick="copyText(\`${item.content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`, this)" class="w-full py-3 bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 rounded-xl text-[9px] font-black uppercase mt-4 hover:bg-yellow-400 hover:text-black transition">
-                            <i class="fas fa-copy mr-2"></i> Copy Full Note
-                        </button>
-                    </div>`;
+                        <div class="note-display-box">${item.content}</div>
+                        <button onclick="copyText(\`${item.content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`, this)" class="w-full py-3 bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 rounded-xl text-[9px] font-black uppercase mt-4 hover:bg-yellow-400 hover:text-black transition shadow-lg"><i class="fas fa-copy mr-2"></i> Copy Full Note</button></div>`;
                 } else if(mInfo.type === 'image') {
-                    body = `<div class="h-full flex flex-col pt-4"><div class="flex-grow rounded-xl overflow-hidden border border-white/10"><img src="${item.image}" class="w-full h-full object-cover"></div></div>`;
+                    body = `<div class="h-full flex flex-col pt-4"><div class="flex-grow rounded-xl overflow-hidden border border-white/10 shadow-lg"><img src="${item.image}" class="w-full h-full object-cover"></div></div>`;
                 }
-
-                card.innerHTML = `
-                    <div class="flex justify-between items-center pb-3 border-b border-white/10">
-                        <h3 class="font-master text-white font-black text-[10px] uppercase truncate italic">${item.title}</h3>
-                        <div class="flex gap-3">
-                            <button onclick="edit(${rIndex})" class="text-white/10 hover:text-yellow-400 transition"><i class="fas fa-pen-nib"></i></button>
-                            <button onclick="del(${rIndex})" class="text-white/10 hover:text-red-500 transition"><i class="fas fa-trash-alt"></i></button>
-                        </div>
-                    </div>
-                    ${body}
-                `;
+                card.innerHTML = `<div class="flex justify-between items-center pb-3 border-b border-white/10"><h3 class="font-master text-white font-black text-[10px] uppercase truncate italic">${item.title}</h3><div class="flex gap-3"><button onclick="edit(${rIndex})" class="text-white/10 hover:text-yellow-400 transition"><i class="fas fa-pen-nib"></i></button><button onclick="del(${rIndex})" class="text-white/10 hover:text-red-500 transition"><i class="fas fa-trash-alt"></i></button></div></div>${body}`;
                 grid.appendChild(card);
             });
             document.getElementById('emptyState').classList.toggle('hidden', filtered.length > 0);
@@ -342,15 +317,27 @@
         function renderSettings() {
             const grid = document.getElementById('cardGrid');
             grid.innerHTML = `
-                <div class="bg-black/60 p-10 rounded-[40px] border border-white/10 space-y-6">
+                <div class="bg-black/60 p-10 rounded-[40px] border border-white/10 space-y-6 shadow-2xl backdrop-blur-3xl">
                     <h3 class="font-master text-sm text-yellow-400 uppercase italic border-b border-white/10 pb-4">Settings Master</h3>
                     <div class="grid grid-cols-2 gap-6">
-                        <input type="text" id="setNewUser" value="${MASTER_USER}" class="bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold text-xs uppercase">
-                        <input type="text" id="setNewPass" value="${MASTER_PASS}" class="bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold text-xs uppercase">
+                        <div class="space-y-2">
+                            <label class="text-[8px] text-gray-500 uppercase font-bold ml-1">Master Username</label>
+                            <input type="text" id="setNewUser" value="${MASTER_USER}" class="w-full display-input-box text-white font-bold text-xs uppercase">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[8px] text-gray-500 uppercase font-bold ml-1">Master Password</label>
+                            <input type="text" id="setNewPass" value="${MASTER_PASS}" class="w-full display-input-box text-white font-bold text-xs uppercase">
+                        </div>
                     </div>
-                    <input type="text" id="setNewBgLogin" value="${BG_LOGIN}" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white text-[10px]">
-                    <input type="text" id="setNewBgDash" value="${BG_DASH}" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white text-[10px]">
-                    <button onclick="saveSettings()" class="w-full py-4 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px] tracking-widest">Update All</button>
+                    <div class="space-y-2 text-left">
+                        <label class="text-[8px] text-yellow-400 uppercase font-bold ml-1">1. Login Background URL</label>
+                        <input type="text" id="setNewBgLogin" value="${BG_LOGIN}" class="w-full display-input-box text-white text-[10px]">
+                    </div>
+                    <div class="space-y-2 text-left">
+                        <label class="text-[8px] text-blue-400 uppercase font-bold ml-1">2. Dashboard Background URL</label>
+                        <input type="text" id="setNewBgDash" value="${BG_DASH}" class="w-full display-input-box text-white text-[10px]">
+                    </div>
+                    <button onclick="saveSettings()" class="w-full py-4 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px] tracking-widest shadow-xl">Apply Changes</button>
                 </div>
             `;
         }
@@ -398,31 +385,20 @@
             const file = document.getElementById('inputImageFile').files[0];
             let imgData = editIdx !== '' ? masterData[editIdx].image : '';
             if(file) imgData = await toBase64(file);
-
-            let obj = {
-                category: activeMenu,
-                title: document.getElementById('inputTitle').value,
-                user: document.getElementById('inputUser').value,
-                pass: document.getElementById('inputPass').value,
-                link: document.getElementById('inputLink').value,
-                content: document.getElementById('inputContent').value,
-                image: imgData
-            };
+            let obj = { category: activeMenu, title: document.getElementById('inputTitle').value, user: document.getElementById('inputUser').value, pass: document.getElementById('inputPass').value, link: document.getElementById('inputLink').value, content: document.getElementById('inputContent').value, image: imgData };
             if(editIdx !== '') masterData[editIdx] = obj; else masterData.push(obj);
             localStorage.setItem('v10_data', JSON.stringify(masterData)); renderCards(); closeDataModal();
         };
 
         function copyText(txt, btn) {
+            if(!txt || txt === 'undefined') return;
             navigator.clipboard.writeText(txt);
             const icon = btn.querySelector('i');
             const originalHTML = btn.innerHTML;
             if(icon) {
                 icon.className = 'fas fa-check text-green-500';
-                setTimeout(() => icon.className = (btn.innerHTML.includes('Full') ? 'fas fa-copy' : 'fas fa-clone'), 1000);
-            } else {
-                btn.innerHTML = 'COPIED!';
-                setTimeout(() => btn.innerHTML = originalHTML, 1000);
-            }
+                setTimeout(() => { if(btn.innerHTML.includes('Full')) icon.className = 'fas fa-copy'; else if(btn.innerHTML.includes('copy')) icon.className = 'fas fa-copy'; else icon.className = 'fas fa-clone'; }, 1000);
+            } else { btn.innerHTML = 'COPIED!'; setTimeout(() => btn.innerHTML = originalHTML, 1000); }
         }
 
         function openMenuModal() { document.getElementById('menuModal').classList.remove('hidden'); }
@@ -431,20 +407,11 @@
         function addNewMenu() {
             const name = document.getElementById('newMenuName').value.trim().toUpperCase();
             const type = document.getElementById('newMenuType').value;
-            if(name && !menus.find(m => m.name === name)) {
-                menus.push({ name, type }); localStorage.setItem('v10_menus', JSON.stringify(menus));
-                switchMenu(name); closeMenuModal();
-            }
+            if(name && !menus.find(m => m.name === name)) { menus.push({ name, type }); localStorage.setItem('v10_menus', JSON.stringify(menus)); switchMenu(name); closeMenuModal(); }
         }
 
         function deleteMenu(name) {
-            if(confirm(`Erase folder ${name}?`)) {
-                menus = menus.filter(m => m.name !== name);
-                masterData = masterData.filter(d => d.category !== name);
-                localStorage.setItem('v10_menus', JSON.stringify(menus));
-                localStorage.setItem('v10_data', JSON.stringify(masterData));
-                switchMenu("DATA LOGIN");
-            }
+            if(confirm(`Erase folder ${name}?`)) { menus = menus.filter(m => m.name !== name); masterData = masterData.filter(d => d.category !== name); localStorage.setItem('v10_menus', JSON.stringify(menus)); localStorage.setItem('v10_data', JSON.stringify(masterData)); switchMenu("DATA LOGIN"); }
         }
 
         function del(idx) { if(confirm('Delete?')) { masterData.splice(idx, 1); localStorage.setItem('v10_data', JSON.stringify(masterData)); renderCards(); } }
