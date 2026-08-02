@@ -25,11 +25,8 @@
         .list-layout { display: flex !important; flex-direction: column !important; gap: 8px; width: 100%; max-width: 850px; }
         .master-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; width: 100%; height: 380px; display: flex; flex-direction: column; padding: 22px; box-sizing: border-box; }
         .pasaran-row { background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 14px 22px; display: flex; align-items: center; transition: 0.3s; }
-        
-        /* STYLE ALERT BARU (LEBIH NYALA) */
         .pasaran-alert { border: 2px solid var(--neon-yellow) !important; box-shadow: 0 0 20px rgba(250, 204, 21, 0.4); background: rgba(250, 204, 21, 0.1) !important; }
         .text-alert { color: var(--neon-yellow) !important; text-shadow: 0 0 10px rgba(250, 204, 21, 0.8); font-weight: 900; }
-
         .is-hidden-mode { opacity: 0.2; filter: grayscale(1); }
         .display-input-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 12px 22px; display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 15px; }
         .note-display-box { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 18px; flex-grow: 1; overflow-y: auto; font-size: 10px; line-height: 1.7; font-family: 'JetBrains Mono', monospace; font-style: italic; white-space: pre-wrap; }
@@ -37,11 +34,20 @@
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--neon-yellow); border-radius: 10px; }
         #loadingOverlay { position: fixed; inset: 0; background: black; z-index: 99999; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; color: var(--neon-yellow); font-size: 12px; letter-spacing: 4px; }
+        
+        #imgPreviewModal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: none; align-items: center; justify-content: center; cursor: zoom-out; padding: 20px; transition: 0.3s; }
+        #imgPreviewModal img { max-width: 100%; max-height: 90vh; border-radius: 10px; box-shadow: 0 0 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body class="flex">
 
-    <div id="loadingOverlay">SYNCING DATA...</div>
+    <div id="loadingOverlay">SYNCING CLOUD DATA...</div>
+
+    <!-- MODAL FULL IMAGE PREVIEW -->
+    <div id="imgPreviewModal" onclick="closeImgPreview()">
+        <img id="imgFull" src="" alt="Full Preview">
+        <div class="absolute top-10 right-10 text-white text-3xl"><i class="fas fa-times"></i></div>
+    </div>
 
     <div id="dynamicBg"></div>
     <div id="bgOverlay"></div>
@@ -66,7 +72,7 @@
         <div class="p-8 border-b border-white/5 text-center">
             <h2 class="font-master text-lg font-black text-white tracking-tighter uppercase">RENDI APRIZAL</h2>
             <div class="flex items-center justify-center gap-2 mt-4 text-[8px] font-bold text-gray-400 uppercase tracking-widest">
-                <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> Cloud Active
+                <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> Cloud Sync Active
             </div>
         </div>
         <div class="flex-grow overflow-y-auto custom-scrollbar p-4" id="sidebarMenu"></div>
@@ -91,7 +97,7 @@
         </div>
         <div id="searchArea" class="flex flex-col lg:flex-row justify-between items-center mb-10 gap-4 w-full">
             <div class="relative w-full lg:w-[400px]">
-                <input type="text" id="searchInput" oninput="renderCards()" placeholder="Search..." class="w-full bg-black/20 border border-white/10 pl-12 pr-4 py-3.5 rounded-xl outline-none focus:border-yellow-400 text-xs font-bold text-white">
+                <input type="text" id="searchInput" oninput="renderCards()" placeholder="Search..." class="w-full bg-black/20 border border-white/10 pl-12 pr-4 py-3.5 rounded-xl outline-none focus:border-yellow-400 text-xs font-bold">
                 <i class="fas fa-search absolute left-5 top-4 text-yellow-400"></i>
             </div>
             <button onclick="openDataModal()" class="bg-yellow-400 text-black px-10 py-3.5 rounded-xl font-black text-[9px] uppercase tracking-widest">Add Entry</button>
@@ -214,8 +220,6 @@
             const now = new Date();
             document.getElementById('clockTime').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
             document.getElementById('clockDate').innerText = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
-            
-            // Auto re-render every minute for alerts
             if(menus.find(m => m.name === activeMenu)?.type === 'lottery') renderCards();
         }
         setInterval(updateClock, 30000); updateClock();
@@ -246,21 +250,34 @@
             }
         }
 
-        // LOGIKA ALERT JAM LEBIH AKURAT
         function isTimeClose(timeStr) {
             if(!timeStr) return false;
             const now = new Date();
             const [h, m] = timeStr.split(':').map(Number);
             const target = new Date();
             target.setHours(h, m, 0);
-
-            let diff = (target - now) / 1000 / 60; // selisih menit
-            return diff >= 0 && diff <= 30; // Nyala 30 menit sebelum result
+            let diff = (target - now) / 1000 / 60;
+            return diff >= -2 && diff <= 30;
         }
 
-        function toggleDone(idx) { masterData[idx].isDone = !masterData[idx].isDone; syncToFirebase(); }
-        function toggleHide(idx) { masterData[idx].isHidden = !masterData[idx].isHidden; syncToFirebase(); }
-        function uncheckAll() { if(confirm('Reset?')) { masterData.forEach(i => { if(i.category === activeMenu) i.isDone = false; }); syncToFirebase(); } }
+        // FUNGSI PREVIEW GAMBAR
+        function viewFullImage(src) {
+            if(!src) return;
+            document.getElementById('imgFull').src = src;
+            document.getElementById('imgPreviewModal').style.display = 'flex';
+        }
+        function closeImgPreview() {
+            document.getElementById('imgPreviewModal').style.display = 'none';
+        }
+
+        // LOGIKA TOMBOL ESC
+        window.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                closeImgPreview(); // Nutup preview foto
+                closeDataModal();  // Nutup modal input data
+                closeMenuModal();  // Nutup modal bikin folder
+            }
+        });
 
         function renderCards() {
             const grid = document.getElementById('cardGrid');
@@ -274,9 +291,7 @@
 
             if(mInfo.type === 'lottery') {
                 grid.className = "list-layout";
-                // SORTING OTOMATIS BERDASARKAN JAM CLOSE
                 filtered.sort((a, b) => (a.closeTime || "99:99").localeCompare(b.closeTime || "99:99"));
-                
                 counterEl.classList.remove('hidden');
                 counterEl.innerHTML = `<div class="text-yellow-400 text-[9px] font-bold bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20">${filtered.filter(d => d.isDone).length} / ${filtered.length} DONE</div><button onclick="uncheckAll()" class="text-red-500 text-[8px] uppercase font-bold bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20">Reset</button>`;
             } else {
@@ -315,11 +330,15 @@
                             <a href="${item.link}" target="_blank" class="block w-full py-3 bg-yellow-400 text-black rounded-xl text-[9px] font-black text-center mt-2">Visit</a>
                         </div>`;
                     } else if(mInfo.type === 'image') {
-                        contentBody = `<div class="mt-4 flex-grow rounded-xl overflow-hidden border border-white/10"><img src="${item.image}" class="w-full h-full object-cover"></div>`;
+                        contentBody = `<div class="mt-4 flex-grow rounded-xl overflow-hidden border border-white/10 cursor-zoom-in" onclick="viewFullImage('${item.image}')"><img src="${item.image}" class="w-full h-full object-cover"></div>`;
                     } else if(mInfo.type === 'image_note') {
-                        contentBody = `<div class="mt-4 flex flex-col h-full overflow-hidden"><img src="${item.image}" class="h-32 w-full object-cover rounded-xl mb-2 border border-white/10"><div class="note-display-box h-24 mb-2">${item.content}</div><button onclick="copyVal(${rIndex}, 'content', this)" class="w-full py-3 bg-yellow-400/10 text-yellow-400 rounded-xl text-[9px] font-bold uppercase hover:bg-yellow-400 hover:text-black">Copy Note</button></div>`;
+                        contentBody = `<div class="mt-4 flex flex-col h-full overflow-hidden">
+                            <div class="h-32 w-full overflow-hidden rounded-xl mb-2 border border-white/10 cursor-zoom-in" onclick="viewFullImage('${item.image}')"><img src="${item.image}" class="w-full h-full object-cover"></div>
+                            <div class="note-display-box h-24 mb-2 scrollbar-hide">${item.content}</div>
+                            <button onclick="copyVal(${rIndex}, 'content', this)" class="w-full py-3 bg-yellow-400/10 text-yellow-400 rounded-xl text-[9px] font-bold uppercase hover:bg-yellow-400 hover:text-black">Copy Note</button>
+                        </div>`;
                     } else if(mInfo.type === 'note') {
-                        contentBody = `<div class="mt-4 flex flex-col h-full"><div class="note-display-box mb-4">${item.content}</div><button onclick="copyVal(${rIndex}, 'content', this)" class="w-full py-3 bg-yellow-400/10 text-yellow-400 rounded-xl text-[9px] font-bold uppercase hover:bg-yellow-400 hover:text-black">Copy Full Note</button></div>`;
+                        contentBody = `<div class="mt-4 flex flex-col h-full"><div class="note-display-box mb-4 scrollbar-hide">${item.content}</div><button onclick="copyVal(${rIndex}, 'content', this)" class="w-full py-3 bg-yellow-400/10 text-yellow-400 rounded-xl text-[9px] font-bold uppercase hover:bg-yellow-400 hover:text-black">Copy Full Note</button></div>`;
                     }
                     card.innerHTML = `<div class="flex justify-between items-center pb-3 border-b border-white/10"><h3 class="font-master text-[10px] uppercase truncate italic">${item.title}</h3><div class="flex gap-3"><button onclick="edit(${rIndex})"><i class="fas fa-pen-nib opacity-20"></i></button><button onclick="del(${rIndex})"><i class="fas fa-trash-alt opacity-20"></i></button></div></div>${contentBody}`;
                 }
@@ -337,7 +356,7 @@
                     <input type="text" id="setNewPass" value="${MASTER_PASS}" class="display-input-box text-white text-xs uppercase" placeholder="Pass">
                 </div>
                 <input type="text" id="setNewBgLogin" value="${BG_LOGIN}" class="display-input-box text-white text-[10px]" placeholder="Bg Login URL">
-                <input type="text" id="setNewBgDash" value="${BG_DASH}" class="display-input-box text-white text-[10px]" placeholder="Bg Dashboard URL">
+                <input type="text" id="setNewBgDash" value="${BG_DASH}" class="display-input-box text-white text-[10px]" placeholder="Bg Dash URL">
                 <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl"><span class="text-[10px] font-bold uppercase">Mode</span><button onclick="toggleTheme()" class="px-6 py-2 rounded-xl bg-white/10 text-[9px] font-bold">${IS_LIGHT ? 'LIGHT' : 'DARK'}</button></div>
                 <button onclick="saveSettings()" class="w-full py-4 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px]">Apply</button>
             </div>`;
@@ -349,6 +368,10 @@
             BG_LOGIN = document.getElementById('setNewBgLogin').value; BG_DASH = document.getElementById('setNewBgDash').value; 
             syncToFirebase(); alert('Saved!'); 
         }
+
+        function toggleDone(idx) { masterData[idx].isDone = !masterData[idx].isDone; syncToFirebase(); }
+        function toggleHide(idx) { masterData[idx].isHidden = !masterData[idx].isHidden; syncToFirebase(); }
+        function uncheckAll() { if(confirm('Reset?')) { masterData.forEach(i => { if(i.category === activeMenu) i.isDone = false; }); syncToFirebase(); } }
 
         function openDataModal(index = null) {
             const isEdit = index !== null;
@@ -392,38 +415,27 @@
                 content: document.getElementById('inputContent').value || '',
                 closeTime: document.getElementById('inputClose').value || '',
                 resultTime: document.getElementById('inputResult').value || '',
-                isDone: editIdx !== '' ? masterData[editIdx].isDone : false,
-                isHidden: editIdx !== '' ? masterData[editIdx].isHidden : false,
+                isDone: editIdx !== '' ? (masterData[editIdx].isDone || false) : false,
+                isHidden: editIdx !== '' ? (masterData[editIdx].isHidden || false) : false,
                 image: imgData
             };
-
             if(editIdx !== '') masterData[editIdx] = obj; else masterData.push(obj);
-            
-            try {
-                await db.ref('vault_v10').set({
-                    menus, masterData,
-                    settings: { user: MASTER_USER, pass: MASTER_PASS, bgLogin: BG_LOGIN, bgDash: BG_DASH, isLight: IS_LIGHT }
-                });
-                closeDataModal();
-            } catch(err) { alert('Error: ' + err.message); }
+            try { await db.ref('vault_v10').set({ menus, masterData, settings: { user: MASTER_USER, pass: MASTER_PASS, bgLogin: BG_LOGIN, bgDash: BG_DASH, isLight: IS_LIGHT } }); closeDataModal(); } catch(err) { alert('Error: ' + err.message); }
             btn.innerText = 'Save Data';
         };
 
         function closeDataModal() { document.getElementById('dataModal').classList.add('hidden'); document.getElementById('vaultForm').reset(); }
         function addNewMenu() {
             const name = document.getElementById('newMenuName').value.trim().toUpperCase();
-            if(name && !menus.find(m => m.name === name)) { 
-                menus.push({ name, type: document.getElementById('newMenuType').value }); syncToFirebase(); 
-                document.getElementById('menuModal').classList.add('hidden'); 
-            }
+            if(name && !menus.find(m => m.name === name)) { menus.push({ name, type: document.getElementById('newMenuType').value }); syncToFirebase(); document.getElementById('menuModal').classList.add('hidden'); }
         }
         function deleteMenu(name) { if(confirm('Delete?')) { menus = menus.filter(m => m.name !== name); syncToFirebase(); } }
         function del(idx) { if(confirm('Delete?')) { masterData.splice(idx, 1); syncToFirebase(); } }
         function edit(idx) { openDataModal(idx); }
-        function openMenuModal() { document.getElementById('menuModal').classList.remove('hidden'); }
-        function closeMenuModal() { document.getElementById('menuModal').classList.add('hidden'); }
         function copyVal(idx, f, b) { navigator.clipboard.writeText(masterData[idx][f]); b.innerHTML = '<i class="fas fa-check text-green-500"></i>'; setTimeout(() => b.innerHTML = '<i class="fas fa-clone"></i>', 1000); }
         function logout() { location.reload(); }
+        function openMenuModal() { document.getElementById('menuModal').classList.remove('hidden'); }
+        function closeMenuModal() { document.getElementById('menuModal').classList.add('hidden'); }
 
         syncFromFirebase();
     </script>
