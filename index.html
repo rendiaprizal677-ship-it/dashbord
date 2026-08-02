@@ -3,121 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RENDI APRIZAL - SUPREME VAULT v10</title>
+    <title>RENDI APRIZAL - VAULT v10 FIREBASE</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     
     <style>
-        :root { --neon-yellow: #facc15; }
-
-        #dynamicBg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -2;
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
-
-        #bgOverlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7));
-        }
-
-        body { font-family: 'Poppins', sans-serif; color: white; height: 100vh; overflow: hidden; margin: 0; }
+        :root { --neon-yellow: #facc15; --card-bg: rgba(10, 10, 10, 0.6); --text-color: #ffffff; }
+        .light-theme { --card-bg: rgba(255, 255, 255, 0.9); --text-color: #1a1a1a; }
+        #dynamicBg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background-size: cover; background-position: center; background-attachment: fixed; transition: 0.5s; }
+        #bgOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)); }
+        body { font-family: 'Poppins', sans-serif; color: var(--text-color); height: 100vh; overflow: hidden; margin: 0; transition: 0.3s; }
         .font-master { font-family: 'Orbitron', sans-serif; }
-        .font-code { font-family: 'JetBrains Mono', monospace; }
+        .sidebar-luxury { font-family: 'Orbitron', sans-serif; letter-spacing: 2px; text-transform: uppercase; font-size: 10px; font-weight: 700; transition: 0.3s; border-left: 3px solid transparent; }
+        .sidebar-luxury.active { color: #fff; background: linear-gradient(90deg, rgba(250, 204, 21, 0.2) 0%, transparent 100%); border-left: 3px solid var(--neon-yellow); text-shadow: 0 0 10px rgba(250, 204, 21, 0.8); }
+        #mainContent { display: flex; flex-direction: column; width: 100%; }
+        .grid-layout { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; width: 100%; }
+        .list-layout { display: flex !important; flex-direction: column !important; gap: 8px; width: 100%; max-width: 850px; }
+        .master-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; width: 100%; height: 380px; display: flex; flex-direction: column; padding: 22px; box-sizing: border-box; }
+        .pasaran-row { background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 14px 22px; display: flex; align-items: center; transition: 0.3s; }
+        
+        /* STYLE ALERT BARU (LEBIH NYALA) */
+        .pasaran-alert { border: 2px solid var(--neon-yellow) !important; box-shadow: 0 0 20px rgba(250, 204, 21, 0.4); background: rgba(250, 204, 21, 0.1) !important; }
+        .text-alert { color: var(--neon-yellow) !important; text-shadow: 0 0 10px rgba(250, 204, 21, 0.8); font-weight: 900; }
 
-        /* SIDEBAR */
-        .sidebar-luxury {
-            font-family: 'Orbitron', sans-serif;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-size: 10px;
-            font-weight: 700;
-            transition: 0.3s;
-            border-left: 3px solid transparent;
-        }
-        .sidebar-luxury.active {
-            color: #fff;
-            background: linear-gradient(90deg, rgba(250, 204, 21, 0.2) 0%, transparent 100%);
-            border-left: 3px solid var(--neon-yellow);
-            text-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
-        }
-
-        /* DASHBOARD LAYOUT */
-        #mainContent {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start !important;
-            width: 100%;
-        }
-
-        #cardGrid {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
-            width: 100% !important;
-            justify-content: start !important;
-        }
-
-        /* CARDS */
-        .master-card {
-            background: rgba(10, 10, 10, 0.5);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 28px;
-            width: 100%;
-            height: 380px;
-            display: flex;
-            flex-direction: column;
-            padding: 22px;
-            box-sizing: border-box;
-        }
-
-        /* DISPLAY BOXES - Jarak Tombol Copy diperbaiki di sini */
-        .display-input-box {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 12px 22px; /* Padding samping ditambah agar tidak mepet */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            gap: 15px; /* Jarak antara teks dan ikon */
-        }
-
-        .note-display-box {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
-            padding: 18px;
-            flex-grow: 1;
-            overflow: hidden;
-            font-size: 10px;
-            line-height: 1.7;
-            color: #e2e8f0;
-            font-family: 'JetBrains Mono', monospace;
-            font-style: italic;
-        }
-
-        .neon-clock {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--neon-yellow);
-            text-shadow: 0 0 20px rgba(250, 204, 21, 0.8);
-        }
-
+        .is-hidden-mode { opacity: 0.2; filter: grayscale(1); }
+        .display-input-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 12px 22px; display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 15px; }
+        .note-display-box { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 18px; flex-grow: 1; overflow-y: auto; font-size: 10px; line-height: 1.7; font-family: 'JetBrains Mono', monospace; font-style: italic; white-space: pre-wrap; }
+        .neon-clock { font-family: 'Orbitron', sans-serif; color: var(--neon-yellow); text-shadow: 0 0 20px rgba(250, 204, 21, 0.8); }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--neon-yellow); border-radius: 10px; }
+        #loadingOverlay { position: fixed; inset: 0; background: black; z-index: 99999; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; color: var(--neon-yellow); font-size: 12px; letter-spacing: 4px; }
     </style>
 </head>
 <body class="flex">
+
+    <div id="loadingOverlay">SYNCING DATA...</div>
 
     <div id="dynamicBg"></div>
     <div id="bgOverlay"></div>
@@ -128,8 +52,7 @@
             <div id="loginSideImg" class="hidden md:block w-1/2 m-4 rounded-[30px] bg-cover bg-center"></div>
             <div class="flex-1 p-12 text-center">
                 <h1 class="font-master text-xl font-black mb-1 tracking-[4px]">MASTER <span class="text-yellow-400">LOGIN</span></h1>
-                <p class="text-[8px] tracking-[0.5em] text-gray-500 mb-10 uppercase font-bold">Authorized Access</p>
-                <div class="space-y-4 text-left">
+                <div class="space-y-4 text-left mt-10">
                     <input type="text" id="loginUser" placeholder="USERNAME" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-yellow-400 text-white font-bold text-xs uppercase">
                     <input type="password" id="loginPass" placeholder="PASSWORD" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-yellow-400 text-white font-bold text-xs uppercase">
                     <button onclick="handleLogin()" class="w-full py-4 rounded-xl bg-yellow-400 text-black font-black uppercase text-[10px] tracking-widest mt-6">Unlock</button>
@@ -143,7 +66,7 @@
         <div class="p-8 border-b border-white/5 text-center">
             <h2 class="font-master text-lg font-black text-white tracking-tighter uppercase">RENDI APRIZAL</h2>
             <div class="flex items-center justify-center gap-2 mt-4 text-[8px] font-bold text-gray-400 uppercase tracking-widest">
-                <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> System Online
+                <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> Cloud Active
             </div>
         </div>
         <div class="flex-grow overflow-y-auto custom-scrollbar p-4" id="sidebarMenu"></div>
@@ -154,11 +77,11 @@
         </div>
     </aside>
 
-    <!-- DASHBOARD -->
     <main id="mainContent" class="flex-grow h-screen overflow-y-auto custom-scrollbar p-10">
         <div class="flex justify-between items-start mb-10 w-full">
             <div>
-                <h1 id="currentMenuTitle" class="font-master text-4xl font-black text-white uppercase tracking-tighter italic">VAULT</h1>
+                <h1 id="currentMenuTitle" class="font-master text-4xl font-black uppercase tracking-tighter italic">VAULT</h1>
+                <div id="pasaranCounter" class="hidden mt-2 flex items-center gap-3"></div>
                 <div class="h-1 w-20 bg-yellow-400 mt-2"></div>
             </div>
             <div class="text-right bg-black/20 backdrop-blur-xl px-6 py-3 rounded-2xl border border-white/10">
@@ -177,7 +100,35 @@
         <div id="emptyState" class="hidden text-center py-40 opacity-10 font-master text-4xl uppercase">Empty</div>
     </main>
 
-    <!-- MODALS -->
+    <!-- MODAL DATA -->
+    <div id="dataModal" class="fixed inset-0 bg-black/95 hidden z-[1000] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-black border border-yellow-400/30 rounded-[40px] w-full max-w-lg overflow-hidden">
+            <div class="bg-yellow-400 p-5 flex justify-between items-center text-black">
+                <h3 class="font-black text-[10px] uppercase font-master italic">Entry Config</h3>
+                <button onclick="closeDataModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="vaultForm" class="p-8 space-y-5">
+                <input type="hidden" id="editIndex">
+                <input type="text" id="inputTitle" required placeholder="TITLE / NAMA PASARAN" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-yellow-400 text-white font-bold text-sm uppercase">
+                <div id="accountFields" class="hidden space-y-4">
+                    <input type="text" id="inputUser" placeholder="USERNAME" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold text-xs uppercase">
+                    <input type="text" id="inputPass" placeholder="PASSWORD" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold text-xs uppercase">
+                </div>
+                <div id="lotteryFields" class="hidden space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="time" id="inputClose" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white text-xs">
+                        <input type="time" id="inputResult" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white text-xs">
+                    </div>
+                </div>
+                <input type="url" id="inputLink" placeholder="LINK URL" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-yellow-400 font-bold text-xs">
+                <div id="imageFields" class="hidden"><input type="file" id="inputImageFile" accept="image/*" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-gray-400 font-bold"></div>
+                <div id="noteFields" class="hidden"><textarea id="inputContent" rows="6" placeholder="CONTENT..." class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white text-xs font-code"></textarea></div>
+                <button type="submit" id="btnSave" class="w-full py-4 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px]">Save Data</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL FOLDER -->
     <div id="menuModal" class="fixed inset-0 bg-black/95 hidden z-[1001] flex items-center justify-center p-6 backdrop-blur-sm">
         <div class="p-10 rounded-[40px] w-full max-w-sm text-center border border-white/10 bg-black/90">
             <h3 class="font-master text-lg font-black text-white mb-6 uppercase italic">Folder</h3>
@@ -188,6 +139,7 @@
                     <option value="note">MODE CATATAN</option>
                     <option value="image">MODE FOTO</option>
                     <option value="image_note">MODE FOTO & CATATAN</option>
+                    <option value="lottery">MODE PASARAN</option>
                 </select>
             </div>
             <button onclick="addNewMenu()" class="w-full py-4 mt-8 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px]">Create</button>
@@ -195,44 +147,61 @@
         </div>
     </div>
 
-    <div id="dataModal" class="fixed inset-0 bg-black/95 hidden z-[1000] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-black border border-yellow-400/30 rounded-[40px] w-full max-w-lg overflow-hidden">
-            <div class="bg-yellow-400 p-5 flex justify-between items-center text-black">
-                <h3 class="font-black text-[10px] uppercase font-master italic">Master Config</h3>
-                <button onclick="closeDataModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <form id="vaultForm" class="p-8 space-y-5">
-                <input type="hidden" id="editIndex">
-                <input type="text" id="inputTitle" required placeholder="ENTRY TITLE" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-yellow-400 text-white font-bold text-sm uppercase">
-                <div id="accountFields" class="hidden space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <input type="text" id="inputUser" placeholder="USERNAME" class="bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold text-xs uppercase">
-                        <input type="text" id="inputPass" placeholder="PASSWORD" class="bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold text-xs uppercase">
-                    </div>
-                    <input type="url" id="inputLink" placeholder="LOGIN LINK URL" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-yellow-400 font-bold text-xs">
-                </div>
-                <div id="imageFields" class="hidden"><input type="file" id="inputImageFile" accept="image/*" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-gray-400 font-bold"></div>
-                <div id="noteFields" class="hidden"><textarea id="inputContent" rows="6" placeholder="CONTENT..." class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white text-xs font-code"></textarea></div>
-                <button type="submit" class="w-full py-4 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px]">Save</button>
-            </form>
-        </div>
-    </div>
-
     <script>
-        let MASTER_USER = localStorage.getItem('v10_user') || "admin";
-        let MASTER_PASS = localStorage.getItem('v10_pass') || "master123";
-        const dImg = "https://cdn.areabermain.club/assets/cdn/azdev/2026/08/01/20260801/88c44b3419d36c37925d97b2ae3c427c/screenshot-1.jpg";
-        let BG_LOGIN = localStorage.getItem('v10_bg_login') || dImg;
-        let BG_DASH = localStorage.getItem('v10_bg_dash') || dImg;
+        const firebaseConfig = {
+            apiKey: "AIzaSyD6XZ3t40TDWRfPd_ml-ImlIjS4DNIKlAw",
+            authDomain: "vaultrendi.firebaseapp.com",
+            databaseURL: "https://vaultrendi-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "vaultrendi",
+            storageBucket: "vaultrendi.firebasestorage.app",
+            messagingSenderId: "655144751558",
+            appId: "1:655144751558:web:aa86b6984b7b7b177be2c7"
+        };
 
-        let menus = JSON.parse(localStorage.getItem('v10_menus')) || [{ name: "DATA LOGIN", type: "account" }];
-        let activeMenu = localStorage.getItem('v10_active') || "DATA LOGIN";
-        let masterData = JSON.parse(localStorage.getItem('v10_data')) || [];
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let MASTER_USER = "admin";
+        let MASTER_PASS = "master123";
+        let BG_LOGIN = "";
+        let BG_DASH = "";
+        let IS_LIGHT = false;
+        let menus = [{ name: "DATA LOGIN", type: "account" }];
+        let masterData = [];
+        let activeMenu = "DATA LOGIN";
+
+        async function syncFromFirebase() {
+            db.ref('vault_v10').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    menus = data.menus || menus;
+                    masterData = data.masterData || [];
+                    MASTER_USER = data.settings?.user || "admin";
+                    MASTER_PASS = data.settings?.pass || "master123";
+                    BG_LOGIN = data.settings?.bgLogin || "";
+                    BG_DASH = data.settings?.bgDash || "";
+                    IS_LIGHT = data.settings?.isLight || false;
+                }
+                document.getElementById('loadingOverlay').style.display = 'none';
+                applySettings();
+                renderSidebar();
+                renderCards();
+            });
+        }
+
+        function syncToFirebase() {
+            db.ref('vault_v10').set({
+                menus, masterData,
+                settings: { user: MASTER_USER, pass: MASTER_PASS, bgLogin: BG_LOGIN, bgDash: BG_DASH, isLight: IS_LIGHT }
+            });
+        }
 
         function applySettings() {
-            document.getElementById('loginScreen').style.backgroundImage = `url('${BG_LOGIN}')`;
-            document.getElementById('loginSideImg').style.backgroundImage = `url('${BG_LOGIN}')`;
-            document.getElementById('dynamicBg').style.backgroundImage = `url('${BG_DASH}')`;
+            const dImg = "https://cdn.areabermain.club/assets/cdn/azdev/2026/08/01/20260801/88c44b3419d36c37925d97b2ae3c427c/screenshot-1.jpg";
+            document.getElementById('loginScreen').style.backgroundImage = `url('${BG_LOGIN || dImg}')`;
+            document.getElementById('loginSideImg').style.backgroundImage = `url('${BG_LOGIN || dImg}')`;
+            document.getElementById('dynamicBg').style.backgroundImage = `url('${BG_DASH || dImg}')`;
+            document.body.classList.toggle('light-theme', IS_LIGHT);
         }
 
         function handleLogin() {
@@ -241,22 +210,22 @@
             } else { alert('Access Denied'); }
         }
 
-        function logout() { location.reload(); }
-
         function updateClock() {
             const now = new Date();
             document.getElementById('clockTime').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
             document.getElementById('clockDate').innerText = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+            
+            // Auto re-render every minute for alerts
+            if(menus.find(m => m.name === activeMenu)?.type === 'lottery') renderCards();
         }
-        setInterval(updateClock, 1000); updateClock();
+        setInterval(updateClock, 30000); updateClock();
 
         function renderSidebar() {
             const container = document.getElementById('sidebarMenu'); container.innerHTML = '';
             menus.forEach(m => {
-                const isActive = activeMenu === m.name;
                 const div = document.createElement('div');
-                div.className = `sidebar-luxury p-4 mb-2 rounded-xl cursor-pointer flex justify-between items-center ${isActive ? 'active' : 'text-gray-400/60 hover:bg-white/5'}`;
-                let icon = m.type === 'account' ? 'fa-shield-alt' : m.type === 'note' ? 'fa-sticky-note' : 'fa-image';
+                div.className = `sidebar-luxury p-4 mb-2 rounded-xl cursor-pointer flex justify-between items-center ${activeMenu === m.name ? 'active' : 'text-gray-400/60 hover:bg-white/5'}`;
+                let icon = m.type === 'account' ? 'fa-shield-alt' : m.type === 'note' ? 'fa-sticky-note' : m.type.includes('image') ? 'fa-image' : 'fa-dice';
                 div.innerHTML = `<span onclick="switchMenu('${m.name}')"><i class="fas ${icon} mr-3"></i> ${m.name}</span>
                                 ${m.name !== 'DATA LOGIN' ? `<i onclick="deleteMenu('${m.name}')" class="fas fa-trash-alt text-[8px] opacity-20 hover:opacity-100 hover:text-red-500"></i>` : ''}`;
                 container.appendChild(div);
@@ -265,50 +234,95 @@
 
         function switchMenu(name) {
             activeMenu = name;
-            localStorage.setItem('v10_active', activeMenu);
             document.getElementById('currentMenuTitle').innerText = activeMenu;
             const grid = document.getElementById('cardGrid');
-
             if(activeMenu === 'SETTINGS') {
                 document.getElementById('searchArea').classList.add('hidden');
                 grid.className = "w-full max-w-3xl mx-auto space-y-6 mt-10";
                 renderSettings();
             } else {
                 document.getElementById('searchArea').classList.remove('hidden');
-                grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start justify-start w-full";
-                renderSidebar();
-                renderCards();
+                renderSidebar(); renderCards();
             }
         }
 
+        // LOGIKA ALERT JAM LEBIH AKURAT
+        function isTimeClose(timeStr) {
+            if(!timeStr) return false;
+            const now = new Date();
+            const [h, m] = timeStr.split(':').map(Number);
+            const target = new Date();
+            target.setHours(h, m, 0);
+
+            let diff = (target - now) / 1000 / 60; // selisih menit
+            return diff >= 0 && diff <= 30; // Nyala 30 menit sebelum result
+        }
+
+        function toggleDone(idx) { masterData[idx].isDone = !masterData[idx].isDone; syncToFirebase(); }
+        function toggleHide(idx) { masterData[idx].isHidden = !masterData[idx].isHidden; syncToFirebase(); }
+        function uncheckAll() { if(confirm('Reset?')) { masterData.forEach(i => { if(i.category === activeMenu) i.isDone = false; }); syncToFirebase(); } }
+
         function renderCards() {
-            const grid = document.getElementById('cardGrid'); 
-            const search = document.getElementById('searchInput').value.toLowerCase(); 
+            const grid = document.getElementById('cardGrid');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const counterEl = document.getElementById('pasaranCounter');
             grid.innerHTML = '';
             const mInfo = menus.find(m => m.name === activeMenu);
             if(!mInfo) return;
-            const filtered = masterData.filter(d => d.category === activeMenu && d.title.toLowerCase().includes(search));
 
-            filtered.forEach((item, index) => {
+            let filtered = masterData.filter(d => d.category === activeMenu && d.title.toLowerCase().includes(search));
+
+            if(mInfo.type === 'lottery') {
+                grid.className = "list-layout";
+                // SORTING OTOMATIS BERDASARKAN JAM CLOSE
+                filtered.sort((a, b) => (a.closeTime || "99:99").localeCompare(b.closeTime || "99:99"));
+                
+                counterEl.classList.remove('hidden');
+                counterEl.innerHTML = `<div class="text-yellow-400 text-[9px] font-bold bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20">${filtered.filter(d => d.isDone).length} / ${filtered.length} DONE</div><button onclick="uncheckAll()" class="text-red-500 text-[8px] uppercase font-bold bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20">Reset</button>`;
+            } else {
+                grid.className = "grid-layout";
+                counterEl.classList.add('hidden');
+            }
+
+            filtered.forEach((item) => {
                 const rIndex = masterData.indexOf(item);
                 const card = document.createElement('div');
-                card.className = "master-card";
-                let body = '';
-                if(mInfo.type === 'account') {
-                    body = `<div class="flex flex-col justify-between h-full pt-4"><div class="space-y-3">
-                        <div class="display-input-box"><span class="text-[10px] font-bold text-yellow-400 truncate uppercase italic w-4/5">${item.user}</span><button onclick="copyText('${item.user}', this)" class="text-white/20 hover:text-yellow-400 transition"><i class="fas fa-clone"></i></button></div>
-                        <div class="display-input-box"><span class="text-[10px] font-bold text-yellow-400 w-4/5">********</span><button onclick="copyText('${item.pass}', this)" class="text-white/20 hover:text-yellow-400 transition"><i class="fas fa-clone"></i></button></div>
-                        <div class="display-input-box border-yellow-400/30 bg-yellow-400/10"><span class="text-[9px] font-bold text-yellow-400/60 truncate italic w-4/5">${item.link || 'NO LINK'}</span><button onclick="copyText('${item.link}', this)" class="text-yellow-400/40 hover:text-yellow-400"><i class="fas fa-copy"></i></button></div></div>
-                        <a href="${item.link}" target="_blank" class="block w-full py-3 bg-yellow-400 text-black rounded-xl text-[9px] font-black text-center uppercase tracking-widest mt-4">Visit Link</a></div>`;
-                } else if(mInfo.type === 'note' || mInfo.type === 'image_note') {
-                    body = `<div class="flex flex-col justify-between h-full pt-4">
-                        ${mInfo.type === 'image_note' ? `<div class="mb-3 rounded-xl overflow-hidden h-20 border border-white/10"><img src="${item.image}" class="w-full h-full object-cover"></div>` : ''}
-                        <div class="note-display-box">${item.content}</div>
-                        <button onclick="copyText(\`${item.content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`, this)" class="w-full py-3 bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 rounded-xl text-[9px] font-black uppercase mt-4 hover:bg-yellow-400 hover:text-black transition shadow-lg"><i class="fas fa-copy mr-2"></i> Copy Full Note</button></div>`;
-                } else if(mInfo.type === 'image') {
-                    body = `<div class="h-full flex flex-col pt-4"><div class="flex-grow rounded-xl overflow-hidden border border-white/10 shadow-lg"><img src="${item.image}" class="w-full h-full object-cover"></div></div>`;
+                if(mInfo.type === 'lottery') {
+                    const isAlert = isTimeClose(item.resultTime);
+                    card.className = `pasaran-row ${isAlert ? 'pasaran-alert' : ''} ${item.isDone || item.isHidden ? 'is-hidden-mode' : ''}`;
+                    card.innerHTML = `<div class="flex items-center gap-6 w-[180px] shrink-0"><h3 class="font-master text-[11px] font-black uppercase italic truncate ${isAlert ? 'text-alert' : ''}">${item.title}</h3></div>
+                        <div class="flex gap-6 text-[10px] font-bold font-code shrink-0 mr-4">
+                            <div class="${isAlert ? 'text-alert' : 'text-yellow-400'}">CLOSE: <span class="text-white">${item.closeTime || '--:--'}</span></div>
+                            <div class="${isAlert ? 'text-alert animate-pulse' : 'text-yellow-400'}">RESULT: <span class="text-white">${item.resultTime || '--:--'}</span></div>
+                        </div>
+                        <div class="flex items-center gap-3 flex-grow justify-end">
+                            <a href="${item.link}" target="_blank" class="text-yellow-400 border border-yellow-400/20 px-3 py-1 rounded-lg text-[9px] font-bold">Link</a>
+                            <div class="flex gap-4 items-center border-l border-white/10 pl-4">
+                                <button onclick="toggleHide(${rIndex})"><i class="fas ${item.isHidden ? 'fa-eye-slash' : 'fa-eye'} opacity-30 text-[10px]"></i></button>
+                                <button onclick="edit(${rIndex})"><i class="fas fa-pen opacity-30 text-[10px]"></i></button>
+                                <button onclick="del(${rIndex})"><i class="fas fa-trash opacity-30 text-[10px]"></i></button>
+                                <input type="checkbox" ${item.isDone ? 'checked' : ''} onchange="toggleDone(${rIndex})" class="w-4 h-4 accent-yellow-400 cursor-pointer ml-1">
+                            </div>
+                        </div>`;
+                } else {
+                    card.className = "master-card";
+                    let contentBody = '';
+                    if(mInfo.type === 'account') {
+                        contentBody = `<div class="space-y-3 mt-4">
+                            <div class="display-input-box"><span class="text-[10px] font-bold text-yellow-400 truncate w-4/5">${item.user}</span><button onclick="copyVal(${rIndex}, 'user', this)" class="opacity-30"><i class="fas fa-clone"></i></button></div>
+                            <div class="display-input-box"><span class="text-[10px] font-bold text-yellow-400 w-4/5">********</span><button onclick="copyVal(${rIndex}, 'pass', this)" class="opacity-30"><i class="fas fa-clone"></i></button></div>
+                            <div class="display-input-box border-yellow-400/30 bg-yellow-400/10"><span class="text-[9px] font-bold text-yellow-400/60 truncate w-4/5">${item.link || ''}</span><button onclick="copyVal(${rIndex}, 'link', this)" class="text-yellow-400/40"><i class="fas fa-copy"></i></button></div>
+                            <a href="${item.link}" target="_blank" class="block w-full py-3 bg-yellow-400 text-black rounded-xl text-[9px] font-black text-center mt-2">Visit</a>
+                        </div>`;
+                    } else if(mInfo.type === 'image') {
+                        contentBody = `<div class="mt-4 flex-grow rounded-xl overflow-hidden border border-white/10"><img src="${item.image}" class="w-full h-full object-cover"></div>`;
+                    } else if(mInfo.type === 'image_note') {
+                        contentBody = `<div class="mt-4 flex flex-col h-full overflow-hidden"><img src="${item.image}" class="h-32 w-full object-cover rounded-xl mb-2 border border-white/10"><div class="note-display-box h-24 mb-2">${item.content}</div><button onclick="copyVal(${rIndex}, 'content', this)" class="w-full py-3 bg-yellow-400/10 text-yellow-400 rounded-xl text-[9px] font-bold uppercase hover:bg-yellow-400 hover:text-black">Copy Note</button></div>`;
+                    } else if(mInfo.type === 'note') {
+                        contentBody = `<div class="mt-4 flex flex-col h-full"><div class="note-display-box mb-4">${item.content}</div><button onclick="copyVal(${rIndex}, 'content', this)" class="w-full py-3 bg-yellow-400/10 text-yellow-400 rounded-xl text-[9px] font-bold uppercase hover:bg-yellow-400 hover:text-black">Copy Full Note</button></div>`;
+                    }
+                    card.innerHTML = `<div class="flex justify-between items-center pb-3 border-b border-white/10"><h3 class="font-master text-[10px] uppercase truncate italic">${item.title}</h3><div class="flex gap-3"><button onclick="edit(${rIndex})"><i class="fas fa-pen-nib opacity-20"></i></button><button onclick="del(${rIndex})"><i class="fas fa-trash-alt opacity-20"></i></button></div></div>${contentBody}`;
                 }
-                card.innerHTML = `<div class="flex justify-between items-center pb-3 border-b border-white/10"><h3 class="font-master text-white font-black text-[10px] uppercase truncate italic">${item.title}</h3><div class="flex gap-3"><button onclick="edit(${rIndex})" class="text-white/10 hover:text-yellow-400 transition"><i class="fas fa-pen-nib"></i></button><button onclick="del(${rIndex})" class="text-white/10 hover:text-red-500 transition"><i class="fas fa-trash-alt"></i></button></div></div>${body}`;
                 grid.appendChild(card);
             });
             document.getElementById('emptyState').classList.toggle('hidden', filtered.length > 0);
@@ -316,63 +330,44 @@
 
         function renderSettings() {
             const grid = document.getElementById('cardGrid');
-            grid.innerHTML = `
-                <div class="bg-black/60 p-10 rounded-[40px] border border-white/10 space-y-6 shadow-2xl backdrop-blur-3xl">
-                    <h3 class="font-master text-sm text-yellow-400 uppercase italic border-b border-white/10 pb-4">Settings Master</h3>
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-[8px] text-gray-500 uppercase font-bold ml-1">Master Username</label>
-                            <input type="text" id="setNewUser" value="${MASTER_USER}" class="w-full display-input-box text-white font-bold text-xs uppercase">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[8px] text-gray-500 uppercase font-bold ml-1">Master Password</label>
-                            <input type="text" id="setNewPass" value="${MASTER_PASS}" class="w-full display-input-box text-white font-bold text-xs uppercase">
-                        </div>
-                    </div>
-                    <div class="space-y-2 text-left">
-                        <label class="text-[8px] text-yellow-400 uppercase font-bold ml-1">1. Login Background URL</label>
-                        <input type="text" id="setNewBgLogin" value="${BG_LOGIN}" class="w-full display-input-box text-white text-[10px]">
-                    </div>
-                    <div class="space-y-2 text-left">
-                        <label class="text-[8px] text-blue-400 uppercase font-bold ml-1">2. Dashboard Background URL</label>
-                        <input type="text" id="setNewBgDash" value="${BG_DASH}" class="w-full display-input-box text-white text-[10px]">
-                    </div>
-                    <button onclick="saveSettings()" class="w-full py-4 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px] tracking-widest shadow-xl">Apply Changes</button>
+            grid.innerHTML = `<div class="master-card h-auto p-10 space-y-6">
+                <h3 class="font-master text-sm text-yellow-400 uppercase italic border-b border-white/10 pb-4">Settings</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="setNewUser" value="${MASTER_USER}" class="display-input-box text-white text-xs uppercase" placeholder="User">
+                    <input type="text" id="setNewPass" value="${MASTER_PASS}" class="display-input-box text-white text-xs uppercase" placeholder="Pass">
                 </div>
-            `;
+                <input type="text" id="setNewBgLogin" value="${BG_LOGIN}" class="display-input-box text-white text-[10px]" placeholder="Bg Login URL">
+                <input type="text" id="setNewBgDash" value="${BG_DASH}" class="display-input-box text-white text-[10px]" placeholder="Bg Dashboard URL">
+                <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl"><span class="text-[10px] font-bold uppercase">Mode</span><button onclick="toggleTheme()" class="px-6 py-2 rounded-xl bg-white/10 text-[9px] font-bold">${IS_LIGHT ? 'LIGHT' : 'DARK'}</button></div>
+                <button onclick="saveSettings()" class="w-full py-4 bg-yellow-400 text-black font-black rounded-xl uppercase text-[10px]">Apply</button>
+            </div>`;
         }
 
-        function saveSettings() {
-            MASTER_USER = document.getElementById('setNewUser').value;
-            MASTER_PASS = document.getElementById('setNewPass').value;
-            BG_LOGIN = document.getElementById('setNewBgLogin').value;
-            BG_DASH = document.getElementById('setNewBgDash').value;
-            localStorage.setItem('v10_user', MASTER_USER);
-            localStorage.setItem('v10_pass', MASTER_PASS);
-            localStorage.setItem('v10_bg_login', BG_LOGIN);
-            localStorage.setItem('v10_bg_dash', BG_DASH);
-            applySettings(); alert("Settings Applied!");
+        function toggleTheme() { IS_LIGHT = !IS_LIGHT; syncToFirebase(); }
+        function saveSettings() { 
+            MASTER_USER = document.getElementById('setNewUser').value; MASTER_PASS = document.getElementById('setNewPass').value; 
+            BG_LOGIN = document.getElementById('setNewBgLogin').value; BG_DASH = document.getElementById('setNewBgDash').value; 
+            syncToFirebase(); alert('Saved!'); 
         }
 
         function openDataModal(index = null) {
             const isEdit = index !== null;
             const m = menus.find(mn => mn.name === activeMenu);
             document.getElementById('editIndex').value = isEdit ? index : '';
+            document.getElementById('inputLink').classList.toggle('hidden', !['account', 'lottery'].includes(m.type));
             document.getElementById('accountFields').classList.toggle('hidden', m.type !== 'account');
-            document.getElementById('noteFields').classList.toggle('hidden', m.type === 'account' || m.type === 'image');
+            document.getElementById('lotteryFields').classList.toggle('hidden', m.type !== 'lottery');
+            document.getElementById('noteFields').classList.toggle('hidden', !['note', 'image_note'].includes(m.type));
             document.getElementById('imageFields').classList.toggle('hidden', !m.type.includes('image'));
             if(isEdit) {
                 const d = masterData[index];
-                document.getElementById('inputTitle').value = d.title;
-                document.getElementById('inputUser').value = d.user || '';
-                document.getElementById('inputPass').value = d.pass || '';
-                document.getElementById('inputLink').value = d.link || '';
-                document.getElementById('inputContent').value = d.content || '';
+                document.getElementById('inputTitle').value = d.title; document.getElementById('inputUser').value = d.user || '';
+                document.getElementById('inputPass').value = d.pass || ''; document.getElementById('inputLink').value = d.link || '';
+                document.getElementById('inputContent').value = d.content || ''; document.getElementById('inputClose').value = d.closeTime || '';
+                document.getElementById('inputResult').value = d.resultTime || '';
             }
             document.getElementById('dataModal').classList.remove('hidden');
         }
-
-        function closeDataModal() { document.getElementById('dataModal').classList.add('hidden'); document.getElementById('vaultForm').reset(); }
 
         const toBase64 = file => new Promise((res, rej) => {
             const reader = new FileReader(); reader.readAsDataURL(file);
@@ -381,45 +376,56 @@
 
         document.getElementById('vaultForm').onsubmit = async function(e) {
             e.preventDefault();
+            const btn = document.getElementById('btnSave');
+            btn.innerText = 'SAVING...';
             const editIdx = document.getElementById('editIndex').value;
             const file = document.getElementById('inputImageFile').files[0];
-            let imgData = editIdx !== '' ? masterData[editIdx].image : '';
+            let imgData = editIdx !== '' ? (masterData[editIdx].image || '') : '';
             if(file) imgData = await toBase64(file);
-            let obj = { category: activeMenu, title: document.getElementById('inputTitle').value, user: document.getElementById('inputUser').value, pass: document.getElementById('inputPass').value, link: document.getElementById('inputLink').value, content: document.getElementById('inputContent').value, image: imgData };
+            
+            let obj = {
+                category: activeMenu,
+                title: document.getElementById('inputTitle').value || '',
+                user: document.getElementById('inputUser').value || '',
+                pass: document.getElementById('inputPass').value || '',
+                link: document.getElementById('inputLink').value || '',
+                content: document.getElementById('inputContent').value || '',
+                closeTime: document.getElementById('inputClose').value || '',
+                resultTime: document.getElementById('inputResult').value || '',
+                isDone: editIdx !== '' ? masterData[editIdx].isDone : false,
+                isHidden: editIdx !== '' ? masterData[editIdx].isHidden : false,
+                image: imgData
+            };
+
             if(editIdx !== '') masterData[editIdx] = obj; else masterData.push(obj);
-            localStorage.setItem('v10_data', JSON.stringify(masterData)); renderCards(); closeDataModal();
+            
+            try {
+                await db.ref('vault_v10').set({
+                    menus, masterData,
+                    settings: { user: MASTER_USER, pass: MASTER_PASS, bgLogin: BG_LOGIN, bgDash: BG_DASH, isLight: IS_LIGHT }
+                });
+                closeDataModal();
+            } catch(err) { alert('Error: ' + err.message); }
+            btn.innerText = 'Save Data';
         };
 
-        function copyText(txt, btn) {
-            if(!txt || txt === 'undefined') return;
-            navigator.clipboard.writeText(txt);
-            const icon = btn.querySelector('i');
-            const originalHTML = btn.innerHTML;
-            if(icon) {
-                icon.className = 'fas fa-check text-green-500';
-                setTimeout(() => { if(btn.innerHTML.includes('Full')) icon.className = 'fas fa-copy'; else if(btn.innerHTML.includes('copy')) icon.className = 'fas fa-copy'; else icon.className = 'fas fa-clone'; }, 1000);
-            } else { btn.innerHTML = 'COPIED!'; setTimeout(() => btn.innerHTML = originalHTML, 1000); }
-        }
-
-        function openMenuModal() { document.getElementById('menuModal').classList.remove('hidden'); }
-        function closeMenuModal() { document.getElementById('menuModal').classList.add('hidden'); }
-        
+        function closeDataModal() { document.getElementById('dataModal').classList.add('hidden'); document.getElementById('vaultForm').reset(); }
         function addNewMenu() {
             const name = document.getElementById('newMenuName').value.trim().toUpperCase();
-            const type = document.getElementById('newMenuType').value;
-            if(name && !menus.find(m => m.name === name)) { menus.push({ name, type }); localStorage.setItem('v10_menus', JSON.stringify(menus)); switchMenu(name); closeMenuModal(); }
+            if(name && !menus.find(m => m.name === name)) { 
+                menus.push({ name, type: document.getElementById('newMenuType').value }); syncToFirebase(); 
+                document.getElementById('menuModal').classList.add('hidden'); 
+            }
         }
-
-        function deleteMenu(name) {
-            if(confirm(`Erase folder ${name}?`)) { menus = menus.filter(m => m.name !== name); masterData = masterData.filter(d => d.category !== name); localStorage.setItem('v10_menus', JSON.stringify(menus)); localStorage.setItem('v10_data', JSON.stringify(masterData)); switchMenu("DATA LOGIN"); }
-        }
-
-        function del(idx) { if(confirm('Delete?')) { masterData.splice(idx, 1); localStorage.setItem('v10_data', JSON.stringify(masterData)); renderCards(); } }
+        function deleteMenu(name) { if(confirm('Delete?')) { menus = menus.filter(m => m.name !== name); syncToFirebase(); } }
+        function del(idx) { if(confirm('Delete?')) { masterData.splice(idx, 1); syncToFirebase(); } }
         function edit(idx) { openDataModal(idx); }
+        function openMenuModal() { document.getElementById('menuModal').classList.remove('hidden'); }
+        function closeMenuModal() { document.getElementById('menuModal').classList.add('hidden'); }
+        function copyVal(idx, f, b) { navigator.clipboard.writeText(masterData[idx][f]); b.innerHTML = '<i class="fas fa-check text-green-500"></i>'; setTimeout(() => b.innerHTML = '<i class="fas fa-clone"></i>', 1000); }
+        function logout() { location.reload(); }
 
-        applySettings();
-        renderSidebar(); 
-        switchMenu(activeMenu);
+        syncFromFirebase();
     </script>
 </body>
 </html>
