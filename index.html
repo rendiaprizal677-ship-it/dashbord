@@ -12,10 +12,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     
     <style>
-        :root { --accent: #facc15; --card-bg: rgba(10, 10, 10, 0.85); --glow: rgba(250, 204, 21, 0.8); }
-        .gold-theme { --accent: #d4af37; --card-bg: rgba(15, 12, 0, 0.9); --glow: rgba(212, 175, 55, 0.8); }
+        :root { --accent: #facc15; --card-bg: rgba(10, 10, 10, 0.85); --glow: rgba(250, 204, 21, 0.4); } /* Cahaya glow dikurangin opsitasnya */
+        .gold-theme { --accent: #d4af37; --card-bg: rgba(15, 12, 0, 0.9); --glow: rgba(212, 175, 55, 0.4); }
 
         #dynamicBg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background-size: cover; background-position: center; transition: 0.8s; }
+        #videoBg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; object-fit: cover; display: none; }
         #bgOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.85)); }
         
         body { font-family: 'Poppins', sans-serif; color: white; height: 100vh; overflow: hidden; margin: 0; transition: 0.3s; }
@@ -32,16 +33,19 @@
 
         .master-card { background: var(--card-bg); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 28px; width: 100%; height: 420px; display: flex; flex-direction: column; padding: 22px; box-sizing: border-box; }
         
-        select option { background-color: #111 !important; color: #fff !important; }
-
+        /* REVISI: Pasaran Row & Alert Visual agar lebih adem */
+        .pasaran-row { background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 18px 25px; display: flex; align-items: center; transition: 0.4s; }
+        .pasaran-alert { 
+            border: 1.5px solid var(--accent) !important; 
+            box-shadow: 0 0 15px var(--glow); /* Glow diperkecil */
+            background: rgba(250, 204, 21, 0.05) !important; /* Background kuning sangat tipis */
+        }
+        .text-alert { color: var(--accent) !important; text-shadow: 0 0 5px var(--glow); font-weight: 700; }
+        
         .alarm-card { background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.5)); border: 1px solid rgba(250, 204, 21, 0.2); border-radius: 24px; padding: 30px; display: flex; flex-direction: column; justify-content: space-between; height: 220px; transition: 0.3s; }
         .alarm-card:hover { border-color: var(--accent); box-shadow: 0 0 30px var(--glow); }
 
         .display-input-box { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; width: 100%; transition: 0.3s; }
-        
-        .pasaran-row { background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 18px 25px; display: flex; align-items: center; transition: 0.3s; }
-        .pasaran-alert { border: 2px solid var(--accent) !important; box-shadow: 0 0 25px var(--glow); }
-        .text-alert { color: var(--accent) !important; text-shadow: 0 0 10px var(--glow); font-weight: 900; }
         
         .note-display-box { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 18px; padding: 18px; flex-grow: 1; overflow-y: auto; font-size: 10px; line-height: 1.7; font-family: 'JetBrains Mono', monospace; font-style: italic; white-space: pre-wrap; }
         .neon-clock { font-family: 'Orbitron', sans-serif; color: var(--accent); text-shadow: 0 0 20px var(--glow); }
@@ -88,7 +92,6 @@
         }
         @keyframes slideInNotif { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* REVISI: GAYA PILIHAN HARI MANUAL */
         .day-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
         .day-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; font-size: 10px; font-weight: bold; text-align: center; cursor: pointer; transition: 0.2s; color: #666; text-transform: uppercase; }
         .day-btn.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 15px var(--glow); }
@@ -103,6 +106,8 @@
         <div class="absolute top-10 right-10 text-white text-3xl"><i class="fas fa-times"></i></div>
     </div>
 
+    <!-- VIDEO BACKGROUND ELEMENT -->
+    <video id="videoBg" autoplay muted loop playsinline></video>
     <div id="dynamicBg"></div>
     <div id="bgOverlay"></div>
 
@@ -266,7 +271,6 @@
         let menus = [{ name: "DATA LOGIN", type: "account" }];
         let masterData = []; let activeMenu = "DATA LOGIN";
 
-        // MULTI DAY PICKER LOGIC (REVISI)
         document.querySelectorAll('.day-btn').forEach(btn => {
             btn.onclick = () => {
                 if(btn.dataset.day === 'DAILY') {
@@ -306,7 +310,22 @@
             const dImg = "https://cdn.areabermain.club/assets/cdn/azdev/2026/08/01/20260801/88c44b3419d36c37925d97b2ae3c427c/screenshot-1.jpg";
             document.getElementById('loginScreen').style.backgroundImage = `url('${BG_LOGIN || dImg}')`;
             document.getElementById('loginSideImg').style.backgroundImage = `url('${BG_LOGIN || dImg}')`;
-            document.getElementById('dynamicBg').style.backgroundImage = `url('${BG_DASH || dImg}')`;
+            
+            const dashBgUrl = BG_DASH || dImg;
+            const videoEl = document.getElementById('videoBg');
+            const imgEl = document.getElementById('dynamicBg');
+
+            if (dashBgUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/) || dashBgUrl.includes('googlevideo')) {
+                if (videoEl.src !== dashBgUrl) videoEl.src = dashBgUrl;
+                videoEl.style.display = 'block';
+                imgEl.style.display = 'none';
+            } else {
+                imgEl.style.backgroundImage = `url('${dashBgUrl}')`;
+                imgEl.style.display = 'block';
+                videoEl.style.display = 'none';
+                videoEl.src = '';
+            }
+
             document.body.className = THEME === 'gold' ? 'gold-theme flex' : 'flex';
         }
 
@@ -329,6 +348,7 @@
                 const search = document.getElementById('searchInput').value.toLowerCase();
                 const filtered = masterData.filter(d => d.category === activeMenu && d.title.toLowerCase().includes(search));
                 updateSummaryWidget(filtered);
+                if(now.getSeconds() === 0) renderCards();
             }
         }
         setInterval(updateClock, 1000); updateClock();
@@ -377,6 +397,7 @@
             const grid = document.getElementById('cardGrid'); grid.innerHTML = '';
             const search = document.getElementById('searchInput').value.toLowerCase();
             const counterEl = document.getElementById('pasaranCounter');
+            const now = new Date();
             
             if(activeMenu === 'ALARM CENTER') {
                 grid.className = "grid-layout";
@@ -422,7 +443,13 @@
             filtered.forEach((item) => {
                 const rIndex = masterData.indexOf(item); const card = document.createElement('div');
                 if(mInfo.type === 'lottery') {
-                    const isAlert = isTimeClose(item.resultTime);
+                    const [resH, resM] = (item.resultTime || "00:00").split(':').map(Number);
+                    const targetRes = new Date(); targetRes.setHours(resH, resM, 0);
+                    const diffMinutes = (targetRes - now) / 1000 / 60;
+                    
+                    // Visual alert lebih kalem (diffMinutes < 0 artinya sudah lewat jam result)
+                    const isAlert = (diffMinutes >= 0 && diffMinutes <= 30) || (diffMinutes < 0 && diffMinutes >= -15 && !item.isDone);
+                    
                     card.className = `pasaran-row ${isAlert ? 'pasaran-alert' : ''} ${item.isDone || item.isHidden ? 'opacity-30 grayscale' : ''}`;
                     card.innerHTML = `<div class="flex items-center gap-6 w-[350px] shrink-0">
                         <h3 class="font-master text-[12px] font-black uppercase truncate ${isAlert ? 'text-alert' : ''}">${item.title}</h3>
@@ -476,7 +503,7 @@
                     <input type="text" id="setNewPass" value="${MASTER_PASS}" class="display-input-box text-white text-sm uppercase" placeholder="Master Pass">
                 </div>
                 <input type="text" id="setNewBgLogin" value="${BG_LOGIN}" class="display-input-box text-white text-xs" placeholder="Background Login URL (HD)">
-                <input type="text" id="setNewBgDash" value="${BG_DASH}" class="display-input-box text-white text-xs" placeholder="Background Dashboard URL (HD)">
+                <input type="text" id="setNewBgDash" value="${BG_DASH}" class="display-input-box text-white text-xs" placeholder="Background Dashboard URL (HD / VIDEO MP4)">
                 <div class="flex items-center justify-between p-6 bg-white/5 rounded-2xl">
                     <span class="text-xs font-bold uppercase tracking-widest">Interface Theme</span>
                     <div class="flex gap-4">
@@ -506,7 +533,6 @@
             document.getElementById('imageFields').classList.toggle('hidden', !m.type.includes('image'));
             document.getElementById('inputLink').classList.toggle('hidden', !['account', 'lottery'].includes(m.type));
 
-            // RESET DAY PICKER
             document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
 
             if(isEdit) {
@@ -516,7 +542,6 @@
                 document.getElementById('inputResult').value = d.resultTime || ''; 
                 document.getElementById('inputAlarmTime').value = d.alarmTime || ''; 
                 
-                // LOAD SELECTED DAYS (REVISI)
                 const days = Array.isArray(d.day) ? d.day : [d.day || 'DAILY'];
                 days.forEach(dayName => {
                     document.querySelectorAll('.day-btn').forEach(btn => { if(btn.dataset.day === dayName) btn.classList.add('active'); });
@@ -534,7 +559,6 @@
             e.preventDefault(); const btn = document.getElementById('btnSave'); btn.innerText = 'EXECUTING...';
             const editIdx = document.getElementById('editIndex').value; const file = document.getElementById('inputImageFile').files[0];
             
-            // Collect selected days (REVISI)
             const selectedDays = Array.from(document.querySelectorAll('.day-btn.active'))
                                    .filter(b => b.dataset.day !== 'DAILY')
                                    .map(b => b.dataset.day);
@@ -638,7 +662,6 @@
                 
                 if(item.category === 'ALARM CENTER') {
                     if(item.alarmTime === curHHMM && !alertedList.has(item.title + curHHMM)) {
-                        // REVISI LOGIKA ALARAM MULTI-DAY
                         const alarmDays = Array.isArray(item.day) ? item.day : [item.day || 'DAILY'];
                         if(alarmDays.includes('DAILY') || alarmDays.includes(curDay)) {
                             alertedList.add(item.title + curHHMM);
