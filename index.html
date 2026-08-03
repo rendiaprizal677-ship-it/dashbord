@@ -32,7 +32,6 @@
 
         .master-card { background: var(--card-bg); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 28px; width: 100%; height: 420px; display: flex; flex-direction: column; padding: 22px; box-sizing: border-box; }
         
-        /* Dropdown fix */
         select option { background-color: #111 !important; color: #fff !important; }
 
         .alarm-card { background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.5)); border: 1px solid rgba(250, 204, 21, 0.2); border-radius: 24px; padding: 30px; display: flex; flex-direction: column; justify-content: space-between; height: 220px; transition: 0.3s; }
@@ -73,7 +72,6 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        /* TIMER CSS DI LIST: BESAR & TEBAL */
         .countdown-badge { 
             background: #ef4444; color: white; padding: 6px 16px; border-radius: 10px; 
             font-family: 'Orbitron'; font-size: 14px; 
@@ -82,7 +80,6 @@
         }
         @keyframes pulseTimer { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* NOTIFIKASI ALARM */
         #alarmToast {
             position: fixed; bottom: 30px; right: 30px; width: 400px;
             background: #000; border-left: 6px solid var(--accent); border-radius: 20px;
@@ -90,6 +87,11 @@
             display: none; animation: slideInNotif 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes slideInNotif { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* REVISI: GAYA PILIHAN HARI MANUAL */
+        .day-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+        .day-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; font-size: 10px; font-weight: bold; text-align: center; cursor: pointer; transition: 0.2s; color: #666; text-transform: uppercase; }
+        .day-btn.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 15px var(--glow); }
     </style>
 </head>
 <body class="flex">
@@ -191,18 +193,21 @@
                 <input type="text" id="inputTitle" required placeholder="TITLE / NAMA ITEM" class="w-full bg-white/5 border border-white/10 p-5 rounded-xl outline-none focus:border-yellow-400 text-white font-bold text-base uppercase">
                 
                 <div id="alarmFields" class="hidden space-y-5">
-                    <div class="grid grid-cols-2 gap-5">
-                        <select id="inputDay" class="w-full bg-white/5 border border-white/10 p-5 rounded-xl text-white text-sm font-bold uppercase outline-none focus:border-yellow-400">
-                            <option value="DAILY">SETIAP HARI</option>
-                            <option value="Senin">SENIN</option>
-                            <option value="Selasa">SELASA</option>
-                            <option value="Rabu">RABU</option>
-                            <option value="Kamis">KAMIS</option>
-                            <option value="Jumat">JUMAT</option>
-                            <option value="Sabtu">SABTU</option>
-                            <option value="Minggu">MINGGU</option>
-                        </select>
-                        <input type="time" id="inputAlarmTime" class="w-full bg-white/5 border border-white/10 p-5 rounded-xl text-white text-base font-bold outline-none focus:border-yellow-400">
+                    <div class="grid grid-cols-2 gap-5 items-start">
+                        <div>
+                            <label class="text-[9px] text-gray-500 font-black uppercase tracking-widest block mb-2">Pilih Hari (Manual):</label>
+                            <div class="day-selector" id="daySelectorContainer">
+                                <div class="day-btn" data-day="DAILY">DAILY</div>
+                                <div class="day-btn" data-day="Senin">Senin</div>
+                                <div class="day-btn" data-day="Selasa">Selasa</div>
+                                <div class="day-btn" data-day="Rabu">Rabu</div>
+                                <div class="day-btn" data-day="Kamis">Kamis</div>
+                                <div class="day-btn" data-day="Jumat">Jumat</div>
+                                <div class="day-btn" data-day="Sabtu">Sabtu</div>
+                                <div class="day-btn" data-day="Minggu">Minggu</div>
+                            </div>
+                        </div>
+                        <input type="time" id="inputAlarmTime" class="w-full bg-white/5 border border-white/10 p-5 rounded-xl text-white text-base font-bold outline-none focus:border-yellow-400 h-[100px]">
                     </div>
                 </div>
 
@@ -261,6 +266,24 @@
         let menus = [{ name: "DATA LOGIN", type: "account" }];
         let masterData = []; let activeMenu = "DATA LOGIN";
 
+        // MULTI DAY PICKER LOGIC (REVISI)
+        document.querySelectorAll('.day-btn').forEach(btn => {
+            btn.onclick = () => {
+                if(btn.dataset.day === 'DAILY') {
+                    const isActive = btn.classList.toggle('active');
+                    document.querySelectorAll('.day-btn').forEach(b => { 
+                        if(b.dataset.day !== 'DAILY') isActive ? b.classList.add('active') : b.classList.remove('active'); 
+                    });
+                } else {
+                    btn.classList.toggle('active');
+                    const allDays = Array.from(document.querySelectorAll('.day-btn')).filter(b => b.dataset.day !== 'DAILY');
+                    const activeDays = allDays.filter(b => b.classList.contains('active'));
+                    const dailyBtn = document.querySelector('.day-btn[data-day="DAILY"]');
+                    activeDays.length === 7 ? dailyBtn.classList.add('active') : dailyBtn.classList.remove('active');
+                }
+            }
+        });
+
         function syncFromFirebase() {
             db.ref('vault_v10').on('value', (snapshot) => {
                 const data = snapshot.val();
@@ -297,8 +320,10 @@
             const now = new Date();
             document.getElementById('clockTime').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
             document.getElementById('clockDate').innerText = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+            
             checkAlarms();
             updateTimers();
+            
             const mInfo = menus.find(m => m.name === activeMenu);
             if(mInfo && mInfo.type === 'lottery') {
                 const search = document.getElementById('searchInput').value.toLowerCase();
@@ -361,9 +386,10 @@
                     const idx = masterData.indexOf(item);
                     const card = document.createElement('div');
                     card.className = "alarm-card";
+                    const displayDays = Array.isArray(item.day) ? item.day.join(', ') : item.day || 'DAILY';
                     card.innerHTML = `
                         <div class="flex justify-between items-start">
-                            <div><div class="text-[10px] text-yellow-400 font-bold tracking-widest uppercase mb-1">${item.day || 'DAILY'}</div><h3 class="font-master text-sm font-black italic">${item.title}</h3></div>
+                            <div><div class="text-[9px] text-yellow-400 font-bold tracking-widest uppercase mb-1">${displayDays}</div><h3 class="font-master text-sm font-black italic">${item.title}</h3></div>
                             <div class="flex gap-4">
                                 <button onclick="edit(${idx})"><i class="fas fa-pen opacity-20 hover:opacity-100"></i></button>
                                 <button onclick="del(${idx})"><i class="fas fa-trash opacity-20 hover:opacity-100"></i></button>
@@ -480,12 +506,24 @@
             document.getElementById('imageFields').classList.toggle('hidden', !m.type.includes('image'));
             document.getElementById('inputLink').classList.toggle('hidden', !['account', 'lottery'].includes(m.type));
 
+            // RESET DAY PICKER
+            document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+
             if(isEdit) {
                 const d = masterData[index]; document.getElementById('inputTitle').value = d.title; document.getElementById('inputUser').value = d.user || '';
                 document.getElementById('inputPass').value = d.pass || ''; document.getElementById('inputLink').value = d.link || '';
                 document.getElementById('inputContent').value = d.content || ''; document.getElementById('inputClose').value = d.closeTime || '';
                 document.getElementById('inputResult').value = d.resultTime || ''; 
-                document.getElementById('inputAlarmTime').value = d.alarmTime || ''; document.getElementById('inputDay').value = d.day || 'DAILY';
+                document.getElementById('inputAlarmTime').value = d.alarmTime || ''; 
+                
+                // LOAD SELECTED DAYS (REVISI)
+                const days = Array.isArray(d.day) ? d.day : [d.day || 'DAILY'];
+                days.forEach(dayName => {
+                    document.querySelectorAll('.day-btn').forEach(btn => { if(btn.dataset.day === dayName) btn.classList.add('active'); });
+                });
+                if(days.includes('DAILY')) {
+                    document.querySelectorAll('.day-btn').forEach(btn => btn.classList.add('active'));
+                }
             }
             document.getElementById('dataModal').classList.remove('hidden');
         }
@@ -495,8 +533,16 @@
         document.getElementById('vaultForm').onsubmit = async function(e) {
             e.preventDefault(); const btn = document.getElementById('btnSave'); btn.innerText = 'EXECUTING...';
             const editIdx = document.getElementById('editIndex').value; const file = document.getElementById('inputImageFile').files[0];
+            
+            // Collect selected days (REVISI)
+            const selectedDays = Array.from(document.querySelectorAll('.day-btn.active'))
+                                   .filter(b => b.dataset.day !== 'DAILY')
+                                   .map(b => b.dataset.day);
+
             let imgData = editIdx !== '' ? (masterData[editIdx].image || '') : ''; if(file) imgData = await toBase64(file);
-            let obj = { category: activeMenu, title: document.getElementById('inputTitle').value || '', user: document.getElementById('inputUser').value || '', pass: document.getElementById('inputPass').value || '', link: document.getElementById('inputLink').value || '', content: document.getElementById('inputContent').value || '', closeTime: document.getElementById('inputClose').value || '', resultTime: document.getElementById('inputResult').value || '', alarmTime: document.getElementById('inputAlarmTime').value || '', day: document.getElementById('inputDay').value || 'DAILY', isDone: editIdx !== '' ? (masterData[editIdx].isDone || false) : false, isHidden: editIdx !== '' ? (masterData[editIdx].isHidden || false) : false, image: imgData };
+            
+            let obj = { category: activeMenu, title: document.getElementById('inputTitle').value || '', user: document.getElementById('inputUser').value || '', pass: document.getElementById('inputPass').value || '', link: document.getElementById('inputLink').value || '', content: document.getElementById('inputContent').value || '', closeTime: document.getElementById('inputClose').value || '', resultTime: document.getElementById('inputResult').value || '', alarmTime: document.getElementById('inputAlarmTime').value || '', day: selectedDays.length === 7 ? ['DAILY'] : selectedDays, isDone: editIdx !== '' ? (masterData[editIdx].isDone || false) : false, isHidden: editIdx !== '' ? (masterData[editIdx].isHidden || false) : false, image: imgData };
+            
             if(editIdx !== '') masterData[editIdx] = obj; else masterData.push(obj);
             try { await db.ref('vault_v10').set({ menus, masterData, settings: { user: MASTER_USER, pass: MASTER_PASS, bgLogin: BG_LOGIN, bgDash: BG_DASH, theme: THEME } }); closeDataModal(); } catch(err) { alert('Error: ' + err.message); }
             btn.innerText = 'Save Configuration';
@@ -517,7 +563,6 @@
         function openMenuModal() { document.getElementById('menuModal').classList.remove('hidden'); }
         function closeMenuModal() { document.getElementById('menuModal').classList.add('hidden'); }
 
-        // REVISI: TIMER DIPERBESAR DI WIDGET & TAMBAH SPASI DALAM KURUNG
         function updateSummaryWidget(filteredData) {
             const widget = document.getElementById('summaryWidget');
             const content = document.getElementById('summaryWidgetContent');
@@ -541,16 +586,15 @@
                 if(diff > 0) {
                     const mm = Math.floor(diff / 60);
                     const ss = diff % 60;
-                    // REVISI: TAMBAH SPASI ( ${waktu} )
                     cdText = `<span class="ml-4 text-white bg-red-600 px-3 py-1 rounded-md font-black shadow-lg text-[14px]">( ${mm}:${ss < 10 ? '0' : ''}${ss} )</span>`;
                 }
                 return `<div class="flex items-center text-white border-l-2 border-yellow-400 pl-4 py-2">${u.title} ${cdText}</div>`;
             }).join('');
             
             content.innerHTML = `
-                <div class="mb-5 text-gray-400">${doneCount} PASAREAN DONE RESULT</div>
+                <div class="mb-5 text-gray-400">${doneCount} PASARAN DONE RESULT</div>
                 <div class="pt-6 border-t border-white/10">
-                    <div style="color:var(--accent)" class="mb-5">NEXT RESULT </div>
+                    <div style="color:var(--accent)" class="mb-5">NEXT RESULT</div>
                     <div class="space-y-4 text-xs">
                         ${upcomingHtml || '<div class="text-gray-600 italic tracking-widest opacity-40">-- TIDAK ADA DATA --</div>'}
                     </div>
@@ -567,7 +611,6 @@
                 let diff = Math.floor((target - now) / 1000);
                 if(diff > 0 && diff <= 1800) {
                     const mm = Math.floor(diff / 60); const ss = diff % 60;
-                    // REVISI: TAMBAH SPASI ( ${waktu} )
                     badge.innerHTML = `<span class="countdown-badge">( ${mm}:${ss < 10 ? '0' : ''}${ss} )</span>`;
                 } else { badge.innerHTML = ''; }
             });
@@ -595,9 +638,11 @@
                 
                 if(item.category === 'ALARM CENTER') {
                     if(item.alarmTime === curHHMM && !alertedList.has(item.title + curHHMM)) {
-                        if(item.day === 'DAILY' || item.day === curDay) {
+                        // REVISI LOGIKA ALARAM MULTI-DAY
+                        const alarmDays = Array.isArray(item.day) ? item.day : [item.day || 'DAILY'];
+                        if(alarmDays.includes('DAILY') || alarmDays.includes(curDay)) {
                             alertedList.add(item.title + curHHMM);
-                            triggerAlarm(item, "GAS");
+                            triggerAlarm(item, "ALARM REMINDER");
                         }
                     }
                 }
@@ -627,7 +672,7 @@
                 return df > 0 && df <= 5;
             });
 
-            next.innerText = upcomingNext ? `BERIKUTNYA: ${upcomingNext.title} (SEGERA)` : "-- TIDAK ADA RESULT DALAM 30 MENIT KEDEPAN--";
+            next.innerText = upcomingNext ? `BERIKUTNYA: ${upcomingNext.title} (SEGERA)` : "-- TIDAK ADA RESULT --";
             
             toast.style.display = 'block';
             try { 
