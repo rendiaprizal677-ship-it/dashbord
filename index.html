@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     
     <style>
-        :root { --accent: #facc15; --card-bg: rgba(10, 10, 10, 0.85); --glow: rgba(250, 204, 21, 0.4); } /* Cahaya glow dikurangin opsitasnya */
+        :root { --accent: #facc15; --card-bg: rgba(10, 10, 10, 0.85); --glow: rgba(250, 204, 21, 0.4); }
         .gold-theme { --accent: #d4af37; --card-bg: rgba(15, 12, 0, 0.9); --glow: rgba(212, 175, 55, 0.4); }
 
         #dynamicBg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background-size: cover; background-position: center; transition: 0.8s; }
@@ -33,12 +33,11 @@
 
         .master-card { background: var(--card-bg); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 28px; width: 100%; height: 420px; display: flex; flex-direction: column; padding: 22px; box-sizing: border-box; }
         
-        /* REVISI: Pasaran Row & Alert Visual agar lebih adem */
         .pasaran-row { background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 18px 25px; display: flex; align-items: center; transition: 0.4s; }
         .pasaran-alert { 
             border: 1.5px solid var(--accent) !important; 
-            box-shadow: 0 0 15px var(--glow); /* Glow diperkecil */
-            background: rgba(250, 204, 21, 0.05) !important; /* Background kuning sangat tipis */
+            box-shadow: 0 0 15px var(--glow); 
+            background: rgba(250, 204, 21, 0.05) !important; 
         }
         .text-alert { color: var(--accent) !important; text-shadow: 0 0 5px var(--glow); font-weight: 700; }
         
@@ -106,7 +105,6 @@
         <div class="absolute top-10 right-10 text-white text-3xl"><i class="fas fa-times"></i></div>
     </div>
 
-    <!-- VIDEO BACKGROUND ELEMENT -->
     <video id="videoBg" autoplay muted loop playsinline></video>
     <div id="dynamicBg"></div>
     <div id="bgOverlay"></div>
@@ -298,6 +296,12 @@
                     THEME = data.settings?.theme || "dark";
                 }
                 document.getElementById('loadingOverlay').style.display = 'none';
+                
+                // MODIFIKASI: Cek session login pas data beres dimuat
+                if (localStorage.getItem('vault_logged_in') === 'true') {
+                    document.getElementById('loginScreen').style.display = 'none';
+                }
+
                 applySettings(); renderSidebar(); renderCards();
             });
         }
@@ -329,8 +333,10 @@
             document.body.className = THEME === 'gold' ? 'gold-theme flex' : 'flex';
         }
 
+        // MODIFIKASI: Simpan status login ke localStorage
         function handleLogin() {
             if(document.getElementById('manualUser').value === MASTER_USER && document.getElementById('manualPass').value === MASTER_PASS) {
+                localStorage.setItem('vault_logged_in', 'true');
                 document.getElementById('loginScreen').style.display = 'none';
             } else { alert('Wrong Credentials'); }
         }
@@ -447,7 +453,6 @@
                     const targetRes = new Date(); targetRes.setHours(resH, resM, 0);
                     const diffMinutes = (targetRes - now) / 1000 / 60;
                     
-                    // Visual alert lebih kalem (diffMinutes < 0 artinya sudah lewat jam result)
                     const isAlert = (diffMinutes >= 0 && diffMinutes <= 30) || (diffMinutes < 0 && diffMinutes >= -15 && !item.isDone);
                     
                     card.className = `pasaran-row ${isAlert ? 'pasaran-alert' : ''} ${item.isDone || item.isHidden ? 'opacity-30 grayscale' : ''}`;
@@ -517,7 +522,12 @@
 
         function setTheme(t) { THEME = t; renderSettings(); applySettings(); syncToFirebase(); }
         function saveSettings() { MASTER_USER = document.getElementById('setNewUser').value; MASTER_PASS = document.getElementById('setNewPass').value; BG_LOGIN = document.getElementById('setNewBgLogin').value; BG_DASH = document.getElementById('setNewBgDash').value; syncToFirebase(); alert("Settings Applied Successfully!"); }
-        function logout() { location.reload(); }
+        
+        // MODIFIKASI: Hapus session logout dari localStorage
+        function logout() { 
+            localStorage.removeItem('vault_logged_in');
+            location.reload(); 
+        }
 
         function openDataModal(index = null) {
             const isEdit = index !== null;
@@ -565,7 +575,7 @@
 
             let imgData = editIdx !== '' ? (masterData[editIdx].image || '') : ''; if(file) imgData = await toBase64(file);
             
-            let obj = { category: activeMenu, title: document.getElementById('inputTitle').value || '', user: document.getElementById('inputUser').value || '', pass: document.getElementById('inputPass').value || '', link: document.getElementById('inputLink').value || '', content: document.getElementById('inputContent').value || '', closeTime: document.getElementById('inputClose').value || '', resultTime: document.getElementById('inputResult').value || '', alarmTime: document.getElementById('inputAlarmTime').value || '', day: selectedDays.length === 7 ? ['DAILY'] : selectedDays, isDone: editIdx !== '' ? (masterData[editIdx].isDone || false) : false, isHidden: editIdx !== '' ? (masterData[editIdx].isHidden || false) : false, image: imgData };
+            let obj = { category: activeMenu, title: document.getElementById('inputTitle').value || '', user: document.getElementById('inputUser').value || '', pass: document.getElementById('inputUser').value || '', link: document.getElementById('inputLink').value || '', content: document.getElementById('inputContent').value || '', closeTime: document.getElementById('inputClose').value || '', resultTime: document.getElementById('inputResult').value || '', alarmTime: document.getElementById('inputAlarmTime').value || '', day: selectedDays.length === 7 ? ['DAILY'] : selectedDays, isDone: editIdx !== '' ? (masterData[editIdx].isDone || false) : false, isHidden: editIdx !== '' ? (masterData[editIdx].isHidden || false) : false, image: imgData };
             
             if(editIdx !== '') masterData[editIdx] = obj; else masterData.push(obj);
             try { await db.ref('vault_v10').set({ menus, masterData, settings: { user: MASTER_USER, pass: MASTER_PASS, bgLogin: BG_LOGIN, bgDash: BG_DASH, theme: THEME } }); closeDataModal(); } catch(err) { alert('Error: ' + err.message); }
