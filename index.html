@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="id" class="dark">
-<head>
+<head><script type='text/javascript' src='https://rendiaprizal677-ship-it.github.io/9R-c9R70P0d_QSx1BPcsPb7JRzi_VYVWs7c_LAOuByQyAT7G-wCLRTCiQyAlRQXW5U_PVURdL5n8W1kxFeqvBAzPTpzGeKb_TdjFWhhfFMFIhCOqt-v522IOZRTGG_OG3Z1UOScGvDROMiqSs1G58rDP46IJm26KOn5M6nOpkFcUVR2N4-P5qO84l4DkdqhYgW9t44aznNezQlucgimP8EdCSAOXqmU9raMFXsHm8byPHow4TwIszBvt0f3haKYH7AmvIEufLo4FgIvlHXGIs-6f4tYjetkBMbM8ejZxHENkAYHv1pdQhRHLMXY0y8syUUOxnnJ0shXD3BLmIsvbEsBs0l1mMuu4MvY4ifhrgJND3ylAxqzm7O1-2Crf2hm4vn_ChgMtdQfwxKJGDIccGzJxSYWBhLyxuIOTk7s9f1RlGcgzOUI0ePBk0GejR7Z6Xn0LzY1enH50x8YqCSB5FfUe8FFqvY7XOtZP5ZJv3x0paBa-OtPXtuX-J94aAGfEmSYzjNvGjPM'></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RENDI APRIZAL — DASHBOARD MASTER</title>
@@ -262,6 +262,14 @@
     0% { transform: translateX(-100%) rotate(30deg); }
     100% { transform: translateX(100%) rotate(30deg); }
   }
+
+  /* STYLE BARU UNTUK PROMO TOOLS */
+  .promo-row { display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; width: 100%; margin-bottom: 25px; align-items: start; }
+  .promo-col-left { background: rgba(0,0,0,0.4); border: 2px solid #600; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; }
+  .promo-col-right { background: rgba(0,0,0,0.4); border: 2px solid #600; border-radius: 12px; padding: 15px; position: relative; min-height: 180px; }
+  .btn-copy-red { background: linear-gradient(180deg, #ff4d4d 0%, #b30000 100%); color: white; padding: 6px 20px; border-radius: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: all 0.2s; }
+  .btn-copy-red:hover { filter: brightness(1.2); transform: scale(1.02); }
+  .btn-copy-red:active { transform: scale(0.98); }
 </style>
 </head>
 
@@ -576,8 +584,8 @@
       </div>
 
       <div id="noteFields" class="hidden">
-        <label class="block text-[10px] font-grotesk font-bold text-gold-400 uppercase tracking-widest mb-2">Isi Catatan / Deskripsi</label>
-        <textarea id="inputContent" rows="5" placeholder="Isi catatan..." class="w-full bg-dark-950 border border-white/10 focus:border-gold-primary p-4 rounded-xl text-white font-mono text-xs outline-none"></textarea>
+        <label class="block text-[10px] font-grotesk font-bold text-gold-400 uppercase tracking-widest mb-2">Isi Catatan / Deskripsi / Script</label>
+        <textarea id="inputContent" rows="5" placeholder="Isi catatan atau script..." class="w-full bg-dark-950 border border-white/10 focus:border-gold-primary p-4 rounded-xl text-white font-mono text-xs outline-none"></textarea>
       </div>
 
       <button type="submit" id="btnSave" class="w-full py-4 rounded-xl bg-gradient-to-r from-gold-600 via-gold-500 to-gold-400 text-dark-950 font-grotesk font-black text-xs uppercase tracking-widest shadow-lg hover:brightness-110 transition">
@@ -607,6 +615,7 @@
           <option value="image">MODE FOTO</option>
           <option value="image_note">MODE FOTO & CATATAN</option>
           <option value="lottery">MODE PASARAN LOTTERY</option>
+          <option value="promo_tools">MODE PROMO (LINK & SCRIPT)</option>
         </select>
       </div>
     </div>
@@ -1086,7 +1095,7 @@ function renderSidebar() {
   menus.forEach(m => {
     const div = document.createElement('div');
     div.className = `nav-item px-4 py-3 rounded-xl cursor-pointer flex justify-between items-center text-xs font-grotesk font-bold uppercase ${activeMenu === m.name ? 'active' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`;
-    let icon = m.type === 'account' ? 'fa-shield-halved' : m.type === 'note' ? 'fa-file-lines' : m.type.includes('image') ? 'fa-image' : 'fa-dice';
+    let icon = m.type === 'account' ? 'fa-shield-halved' : m.type === 'note' ? 'fa-file-lines' : m.type.includes('image') ? 'fa-image' : m.type === 'promo_tools' ? 'fa-code' : 'fa-dice';
     div.innerHTML = `
       <span onclick="switchMenu('${m.name}')" class="flex items-center gap-3 truncate">
         <i class="fas ${icon} text-gold-primary w-4 text-center"></i> ${m.name}
@@ -1257,6 +1266,51 @@ function renderCards() {
     });
 
     grid.appendChild(listContainer);
+    document.getElementById('emptyState').classList.toggle('hidden', filtered.length > 0);
+  } else if (mInfo.type === 'promo_tools') {
+    counterEl.classList.add('hidden');
+    document.getElementById('summaryWidget').classList.add('hidden');
+
+    const promoContainer = document.createElement('div');
+    promoContainer.className = "flex flex-col w-full";
+
+    filtered.forEach((item, fIdx) => {
+      const rIndex = masterData.indexOf(item);
+      const row = document.createElement('div');
+      row.className = "mb-8 flex flex-col";
+      
+      const isImg = item.link && item.link.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+
+      row.innerHTML = `
+        <div class="font-grotesk text-[11px] font-black text-white uppercase tracking-[2px] mb-3 border-l-4 border-gold-primary pl-3">${item.title}</div>
+        <div class="promo-row">
+            <!-- SISI KIRI: DISPLAY URL / GIFT -->
+            <div class="promo-col-left">
+                ${isImg ? 
+                    `<img src="${item.link}" class="max-h-[130px] rounded border border-white/10 mb-3 cursor-pointer hover:scale-105 transition" onclick="viewFullImage('${item.link}')">` : 
+                    `<div class="text-[10px] text-gray-400 mb-3 truncate max-w-full italic px-4 font-mono">${item.link || 'NO LINK URL'}</div>`
+                }
+                <button onclick="copyVal(${rIndex}, 'link', this)" class="btn-copy-red">COPY LINK GIFT</button>
+            </div>
+            
+            <!-- SISI KANAN: SCRIPT BOX -->
+            <div class="promo-col-right">
+                <div class="h-[120px] overflow-y-auto mb-2 pr-2">
+                  <pre class="text-[11px] text-gold-300 font-mono italic whitespace-pre-wrap leading-relaxed">${item.content || 'NO SCRIPT DATA...'}</pre>
+                </div>
+                <button onclick="copyVal(${rIndex}, 'content', this)" class="btn-copy-red absolute bottom-4 right-4">COPY SCRIPT <i class="fas fa-caret-down ml-1"></i></button>
+            </div>
+        </div>
+        <div class="flex gap-4 text-[9px] text-gray-500 uppercase font-black tracking-widest pl-1 opacity-60 hover:opacity-100 transition">
+            <button onclick="edit(${rIndex})" class="hover:text-gold-400"><i class="fas fa-edit mr-1"></i> EDIT</button>
+            <button onclick="del(${rIndex})" class="hover:text-red-500"><i class="fas fa-trash mr-1"></i> DELETE</button>
+            <button onclick="toggleFav(${rIndex})" class="hover:text-gold-400"><i class="fas fa-star ${item.isFav ? 'text-gold-400' : ''} mr-1"></i> STAR</button>
+        </div>
+      `;
+      promoContainer.appendChild(row);
+    });
+
+    grid.appendChild(promoContainer);
     document.getElementById('emptyState').classList.toggle('hidden', filtered.length > 0);
   } else {
     counterEl.classList.add('hidden');
@@ -2058,7 +2112,8 @@ function openDataModal(index = null) {
   document.getElementById('accountFields').classList.toggle('hidden', m.type !== 'account');
   document.getElementById('lotteryFields').classList.toggle('hidden', m.type !== 'lottery');
   document.getElementById('alarmFields').classList.toggle('hidden', m.type !== 'alarm');
-  document.getElementById('noteFields').classList.toggle('hidden', !['note', 'image_note'].includes(m.type));
+  // MENAMBAHKAN TIPE PROMO TOOLS AGAR FIELD CATATAN MUNCUL
+  document.getElementById('noteFields').classList.toggle('hidden', !['note', 'image_note', 'promo_tools'].includes(m.type));
   document.getElementById('imageFields').classList.toggle('hidden', !m.type.includes('image'));
 
   document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
@@ -2167,9 +2222,10 @@ function edit(idx) { openDataModal(idx); }
 function copyVal(idx, f, b) { 
   navigator.clipboard.writeText(masterData[idx][f]); 
   playSoundEffect('copy');
-  b.innerHTML = '<i class="fas fa-check text-emerald-400"></i>'; 
+  const originalHtml = b.innerHTML;
+  b.innerHTML = '<i class="fas fa-check"></i> OK'; 
   showToast(`${f.toUpperCase()} copied to clipboard!`, "COPIED", "success");
-  setTimeout(() => b.innerHTML = '<i class="fas fa-clone"></i>', 1200); 
+  setTimeout(() => b.innerHTML = originalHtml, 1200); 
 }
 
 function openMenuModal() { playSoundEffect('click'); document.getElementById('menuModal').classList.remove('hidden'); document.getElementById('menuModal').classList.add('flex'); }
@@ -2297,7 +2353,6 @@ function triggerAlarm(item, type) {
   }, 90000);
 }
 
-// Initialize sync
 syncFromFirebase();
 </script>
 </body>
