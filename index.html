@@ -2051,7 +2051,7 @@ grid.innerHTML = `
 <!-- Section 2: Generator & Kalkulator BBFS -->
 <div class="inner-box-panel rounded-3xl p-6 md:p-8 border-gold-primary/30 shadow-2xl">
 <div class="flex items-center gap-4 pb-5 border-b border-white/10 mb-6">
-<div class="w-11 h-11 rounded-2xl bg-amber-500/10 border border-emerald-500/30 flex items-center justify-center text-amber-400 text-xl shrink-0">
+<div class="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl shrink-0">
 <i class="fas fa-cubes"></i>
 </div>
 <div>
@@ -2274,7 +2274,10 @@ document.getElementById('lotteryFields').classList.toggle('hidden', m.type !== '
 document.getElementById('alarmFields').classList.toggle('hidden', m.type !== 'alarm');
 document.getElementById('noteFields').classList.toggle('hidden', !['note', 'image_note', 'promo_tools'].includes(m.type));
 document.getElementById('imageFields').classList.toggle('hidden', !m.type.includes('image'));
-document.getElementById('linkGroupFields').classList.toggle('hidden', m.type !== 'link_group');
+
+// REVISI: Tampilkan textarea links jika tipe 'link_group' ATAU nama folder 'PENGECEKAN LINK'
+document.getElementById('linkGroupFields').classList.toggle('hidden', (m.type !== 'link_group' && activeMenu !== 'PENGECEKAN LINK'));
+
 document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
 
 if(isEdit) {
@@ -2338,7 +2341,8 @@ image: imgData
 };
 
 const currentMenu = menus.find(m => m.name === activeMenu);
-if (currentMenu && currentMenu.type === 'link_group' || activeMenu === 'PENGECEKAN LINK') {
+// REVISI: Pastikan daftar links ditangkap untuk folder PENGECEKAN LINK
+if ((currentMenu && currentMenu.type === 'link_group') || activeMenu === 'PENGECEKAN LINK') {
 const linksRaw = document.getElementById('inputLinks').value || '';
 const linksArr = parseLinkLines(linksRaw);
 obj.links = linksArr;
